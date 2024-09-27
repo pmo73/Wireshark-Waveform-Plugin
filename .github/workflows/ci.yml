@@ -30,7 +30,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev build-essential cmake libgcrypt20-dev libgnutls28-dev
+        run: sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev tshark build-essential cmake libgcrypt20-dev libgnutls28-dev
 
       # Runs a set of commands using the runners shell
       - name: Build project
