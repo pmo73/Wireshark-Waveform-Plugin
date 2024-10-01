@@ -1,9 +1,8 @@
 #include "config.h"
 #include "wiretap/wtap-int.h"
 #include "wiretap/file_wrappers.h"
-#include "string.h"
 
-WS_DLL_PUBLIC_DEF const gchar plugin_version[] = VERSION;
+WS_DLL_PUBLIC_DEF const gchar plugin_version[] = VCD_VERSION;
 WS_DLL_PUBLIC_DEF const int plugin_want_major = VERSION_MAJOR;
 WS_DLL_PUBLIC_DEF const int plugin_want_minor = VERSION_MINOR;
 

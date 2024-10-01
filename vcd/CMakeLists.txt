@@ -15,7 +15,7 @@ if (CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS "-Wall -Wextra ${CMAKE_C_FLAGS}")
 endif ()
 
-add_definitions(-DVERSION=\"${PROJECT_VERSION}\")
+add_definitions(-DVCD_VERSION=\"${PROJECT_VERSION}\")
 
 add_library(${PROJECT_NAME} MODULE vcd.c)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" DEFINE_SYMBOL "")
