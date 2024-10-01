@@ -40,4 +40,4 @@ jobs:
           make install
 
       - name: Test
-        run: tshark -G plugins | grep error || true
+        run: tshark -G plugins | grep -i -E "(error|couldn)" || true
