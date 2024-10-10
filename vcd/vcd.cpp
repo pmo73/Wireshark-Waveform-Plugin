@@ -2,7 +2,6 @@
 
 extern "C" {
 #include "config.h"
-#include "wireshark.h"
 #include "wiretap/file_wrappers.h"
 #include "wiretap/wtap-int.h"
 }
