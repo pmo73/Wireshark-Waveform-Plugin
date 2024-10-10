@@ -1,4 +1,6 @@
+#if VERSION_MAJOR >= 4
 #include "wireshark.h"
+#endif
 
 extern "C" {
 #include "config.h"
