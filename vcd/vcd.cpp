@@ -6,12 +6,17 @@ WS_DLL_PUBLIC_DEF int plugin_want_minor = VCD_WIRESHARK_VERSION_MINOR;
 
 void wtap_register_vcd();
 
-static gboolean vcd_read(wtap *wth, wtap_rec *rec, Buffer *buf, int *err,
-                         gchar **err_info, gint64 *data_offset);
-static gboolean vcd_seek_read(wtap *wth, gint64 seek_off, wtap_rec *rec,
-                              Buffer *buf, int *err, gchar **err_info);
-static gboolean vcd_read_packet(wtap *wth, FILE_T fh, wtap_rec *rec,
-                                Buffer *buf, int *err, gchar **err_info);
+static VCD_CALLBACK_BOOL_RETURN_TYPE vcd_read(wtap *wth, wtap_rec *rec,
+                                              Buffer *buf, int *err,
+                                              gchar **err_info,
+                                              gint64 *data_offset);
+static VCD_CALLBACK_BOOL_RETURN_TYPE vcd_seek_read(wtap *wth, gint64 seek_off,
+                                                   wtap_rec *rec, Buffer *buf,
+                                                   int *err, gchar **err_info);
+static VCD_CALLBACK_BOOL_RETURN_TYPE vcd_read_packet(wtap *wth, FILE_T fh,
+                                                     wtap_rec *rec, Buffer *buf,
+                                                     int *err,
+                                                     gchar **err_info);
 
 static int vcd_file_type_subtype;
 
@@ -19,7 +24,7 @@ static int vcd_file_type_subtype;
  * Try to interpret a file as a vcd formatted file.
  * Read relevant parts of the given file and collect information needed to
  * read the individual frames. Return value indicates whether this is
- * recognized as an vcd file.
+ * recognized as a vcd file.
  */
 static wtap_open_return_val vcd_open(wtap *wth, [[maybe_unused]] int *err,
                                      [[maybe_unused]] char **err_info) {
@@ -38,8 +43,10 @@ static wtap_open_return_val vcd_open(wtap *wth, [[maybe_unused]] int *err,
  * indication. Report back where reading of this frame started to
  * support subsequent random access read.
  */
-static gboolean vcd_read(wtap *wth, wtap_rec *rec, Buffer *buf, int *err,
-                         gchar **err_info, gint64 *data_offset) {
+static VCD_CALLBACK_BOOL_RETURN_TYPE vcd_read(wtap *wth, wtap_rec *rec,
+                                              Buffer *buf, int *err,
+                                              gchar **err_info,
+                                              gint64 *data_offset) {
   /* Report the current file location */
   *data_offset = file_tell(wth->fh);
 
@@ -55,8 +62,9 @@ static gboolean vcd_read(wtap *wth, wtap_rec *rec, Buffer *buf, int *err,
  * Read the frame at the given offset in the file. Store the frame data
  * in a buffer and fill in the packet header info.
  */
-static gboolean vcd_seek_read(wtap *wth, gint64 seek_off, wtap_rec *rec,
-                              Buffer *buf, int *err, gchar **err_info) {
+static VCD_CALLBACK_BOOL_RETURN_TYPE vcd_seek_read(wtap *wth, gint64 seek_off,
+                                                   wtap_rec *rec, Buffer *buf,
+                                                   int *err, gchar **err_info) {
   /* Seek to the desired file position at the start of the frame */
   if (file_seek(wth->random_fh, seek_off, SEEK_SET, err) == -1)
     return false;
@@ -82,7 +90,7 @@ static gboolean vcd_seek_read(wtap *wth, gint64 seek_off, wtap_rec *rec,
  */
 static auto vcd_read_packet([[maybe_unused]] wtap *wth, FILE_T fh,
                             wtap_rec *rec, Buffer *buf, int *err,
-                            gchar **err_info) -> gboolean {
+                            gchar **err_info) -> VCD_CALLBACK_BOOL_RETURN_TYPE {
   guint8 bpf_hdr[18];
 
   /* Read the packet header */
