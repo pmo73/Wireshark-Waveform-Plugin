@@ -25,7 +25,9 @@ jobs:
       # Install needed packages
       - name: Install packages
         run: |
-          zypper update -y && zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++
+          zypper update -y && zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++ wget
+          wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wiretap/wtap-int.h
+          wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wsutil/file_util.h
 
       # Runs a set of commands using the runners shell
       - name: Build project
