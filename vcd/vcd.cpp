@@ -1,14 +1,8 @@
-#include "glib.h"
-
-extern "C" {
-#include "ws_version.h"
-#include "wiretap/file_wrappers.h"
-#include "wiretap/wtap-int.h"
-}
+#include "vcd.hpp"
 
 WS_DLL_PUBLIC_DEF gchar plugin_version[] = VCD_VERSION;
-WS_DLL_PUBLIC_DEF int plugin_want_major = WIRESHARK_VERSION_MAJOR;
-WS_DLL_PUBLIC_DEF int plugin_want_minor = WIRESHARK_VERSION_MINOR;
+WS_DLL_PUBLIC_DEF int plugin_want_major = VCD_WIRESHARK_VERSION_MAJOR;
+WS_DLL_PUBLIC_DEF int plugin_want_minor = VCD_WIRESHARK_VERSION_MINOR;
 
 void wtap_register_vcd();
 
@@ -24,7 +18,7 @@ static int vcd_file_type_subtype;
 /*
  * Try to interpret a file as a vcd formatted file.
  * Read relevant parts of the given file and collect information needed to
- * read the individual frames. Return value indicates whether or not this is
+ * read the individual frames. Return value indicates whether this is
  * recognized as an vcd file.
  */
 static wtap_open_return_val vcd_open(wtap *wth, [[maybe_unused]] int *err,
@@ -167,16 +161,16 @@ void wtap_register_vcd() {
                                       nullptr,
                                       false,
                                       false,
-#if WIRESHARK_VERSION_MAJOR <= 3 && WIRESHARK_VERSION_MINOR < 6
+#if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
                                       0,
 #else
-                                       nullptr,
+                                      nullptr,
 #endif
                                       nullptr,
                                       nullptr,
                                       nullptr};
 
-#if WIRESHARK_VERSION_MAJOR <= 3 && WIRESHARK_VERSION_MINOR < 6
+#if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
   vcd_file_type_subtype =
       wtap_register_file_type_subtypes(&fi, WTAP_FILE_TYPE_SUBTYPE_UNKNOWN);
 #else
