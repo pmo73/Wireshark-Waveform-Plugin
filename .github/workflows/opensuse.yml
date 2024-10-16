@@ -25,7 +25,7 @@ jobs:
       # Install needed packages
       - name: Install packages
         run: |
-          zypper update && zypper install wireshark wireshark-devel cmake make gcc gcc-c++
+          zypper update && zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++
 
       # Runs a set of commands using the runners shell
       - name: Build project
