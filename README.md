@@ -1,7 +1,7 @@
 # Wireshark-Waveform-Plugin
 
-![Ubuntu](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/ubuntu.yml/badge.svg)
-![OpenSuSen Tumbleweed](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/opensuse.yml/badge.svg)
+![Ubuntu](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/ubuntu.yml/badge.svg?branch=main)
+![OpenSuSen Tumbleweed](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/opensuse.yml/badge.svg?branch=main)
 
 This repository adds to Wireshark the ability to analyze an AXI stream in Wireshark and combines this with a waveform
 based on PulseView.
