@@ -32,10 +32,10 @@ extern "C" {
 
 // Define return type for callback functions, because of issue 19116
 // (https://gitlab.com/wireshark/wireshark/-/issues/19116)
-#if VCD_WIRESHARK_VERSION_MAJOR <= 4 && VCD_WIRESHARK_VERSION_MINOR < 4
-using VCD_CALLBACK_BOOL_RETURN_TYPE = gboolean;
-#else
+#if VCD_WIRESHARK_VERSION_MAJOR >= 4 && VCD_WIRESHARK_VERSION_MINOR >= 4
 using VCD_CALLBACK_BOOL_RETURN_TYPE = bool;
+#else
+using VCD_CALLBACK_BOOL_RETURN_TYPE = gboolean;
 #endif
 
 #endif // VCD_HPP
