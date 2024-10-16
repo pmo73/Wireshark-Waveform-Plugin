@@ -1,14 +1,14 @@
 #include "glib.h"
 
 extern "C" {
-#include "config.h"
+#include "ws_version.h"
 #include "wiretap/file_wrappers.h"
 #include "wiretap/wtap-int.h"
 }
 
 WS_DLL_PUBLIC_DEF gchar plugin_version[] = VCD_VERSION;
-WS_DLL_PUBLIC_DEF int plugin_want_major = VERSION_MAJOR;
-WS_DLL_PUBLIC_DEF int plugin_want_minor = VERSION_MINOR;
+WS_DLL_PUBLIC_DEF int plugin_want_major = WIRESHARK_VERSION_MAJOR;
+WS_DLL_PUBLIC_DEF int plugin_want_minor = WIRESHARK_VERSION_MINOR;
 
 void wtap_register_vcd();
 
@@ -167,7 +167,7 @@ void wtap_register_vcd() {
                                       nullptr,
                                       false,
                                       false,
-#if VERSION_MAJOR <= 3 && VERSION_MINOR < 6
+#if WIRESHARK_VERSION_MAJOR <= 3 && WIRESHARK_VERSION_MINOR < 6
                                       0,
 #else
                                        nullptr,
@@ -176,7 +176,7 @@ void wtap_register_vcd() {
                                       nullptr,
                                       nullptr};
 
-#if VERSION_MAJOR <= 3 && VERSION_MINOR < 6
+#if WIRESHARK_VERSION_MAJOR <= 3 && WIRESHARK_VERSION_MINOR < 6
   vcd_file_type_subtype =
       wtap_register_file_type_subtypes(&fi, WTAP_FILE_TYPE_SUBTYPE_UNKNOWN);
 #else
