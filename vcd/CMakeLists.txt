@@ -12,7 +12,7 @@ endif ()
 
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 if (CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_C_FLAGS "-Wall -Wextra ${CMAKE_C_FLAGS}")
+    set(CMAKE_C_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}")
 endif ()
 
 add_definitions(-DVCD_VERSION=\"${PROJECT_VERSION}\")
