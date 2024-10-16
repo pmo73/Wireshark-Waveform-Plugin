@@ -1,10 +1,14 @@
+#include "glib.h"
+
+extern "C" {
 #include "config.h"
 #include "wiretap/file_wrappers.h"
 #include "wiretap/wtap-int.h"
+}
 
-WS_DLL_PUBLIC_DEF constexpr gchar plugin_version[] = VCD_VERSION;
-WS_DLL_PUBLIC_DEF constexpr int plugin_want_major = VERSION_MAJOR;
-WS_DLL_PUBLIC_DEF constexpr int plugin_want_minor = VERSION_MINOR;
+WS_DLL_PUBLIC_DEF gchar plugin_version[] = VCD_VERSION;
+WS_DLL_PUBLIC_DEF int plugin_want_major = VERSION_MAJOR;
+WS_DLL_PUBLIC_DEF int plugin_want_minor = VERSION_MINOR;
 
 void wtap_register_vcd();
 
@@ -180,10 +184,12 @@ void wtap_register_vcd() {
 #endif
 }
 
+extern "C" {
 WS_DLL_PUBLIC
 void plugin_register() {
   static wtap_plugin plug_vcd;
 
   plug_vcd.register_wtap_module = wtap_register_vcd;
   wtap_register_plugin(&plug_vcd);
+}
 }
