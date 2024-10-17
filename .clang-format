@@ -217,10 +217,7 @@ IndentPPDirectives: None
 PPIndentWidth: 1
 
 # don't indent inside 'extern "C"'
-IndentExternBlock: NoIndent
-
-# if we had templates, indent the 'requires' clause
-IndentRequires: true
+IndentExternBlock: Indent
 
 # don't indent function definition names
 IndentWrappedFunctionNames: false
@@ -230,7 +227,7 @@ IndentWrappedFunctionNames: false
 LambdaBodyIndentation: Signature
 
 # don't add a level of indentation inside of namespaces
-NamespaceIndentation: None
+NamespaceIndentation: All
 
 # }}}
 
@@ -409,7 +406,7 @@ EmptyLineAfterAccessModifier: Never
 
 # don't add a comment to the closing brace of a namespace
 # with the name of the namespace
-FixNamespaceComments: false
+FixNamespaceComments: true
 
 # if we did, don't add comments to namespaces with this
 # many lines or fewer
@@ -429,7 +426,7 @@ Cpp11BracedListStyle: false
 ReflowComments:  true
 
 # don't sort 'using' declarations
-SortUsingDeclarations: false
+SortUsingDeclarations: true
 
 # }}}
 

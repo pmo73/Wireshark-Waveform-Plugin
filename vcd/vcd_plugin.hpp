@@ -1,8 +1,9 @@
-#ifndef VCD_HPP
-#define VCD_HPP
+#ifndef VCD_PLUGIN_HPP
+#define VCD_PLUGIN_HPP
 
-// Include glib.h before wireshark header and the extern C statement, because of
-// a bug in GLib
+// Include glib.h before the wireshark header, so that this will be included as C header and outside
+// the extern C. This has to be done, because compilation fails, if glib is included inside the
+// extern C statement.
 #include "glib.h"
 
 extern "C" {
@@ -38,4 +39,4 @@ using VCD_CALLBACK_BOOL_RETURN_TYPE = bool;
 using VCD_CALLBACK_BOOL_RETURN_TYPE = gboolean;
 #endif
 
-#endif // VCD_HPP
+#endif // VCD_PLUGIN_HPP

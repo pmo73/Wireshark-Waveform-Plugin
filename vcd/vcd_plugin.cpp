@@ -1,29 +1,17 @@
-// Include glib.h before the wireshark header, so that this will be included as C header and outside
-// the extern C. This has to be done, because compilation fails, if glib is included inside the
-// extern C statement.
-#include <glib.h>
-
-#include <iostream>
-
-extern "C" {
-#include <config.h>
-#include <wiretap/file_wrappers.h>
-#include <wiretap/wtap-int.h>
-}
-
+#include "vcd_plugin.hpp"
 #include "vcd_parser.hpp"
 
 WS_DLL_PUBLIC_DEF gchar plugin_version[]  = VCD_VERSION;
-WS_DLL_PUBLIC_DEF int   plugin_want_major = VERSION_MAJOR;
-WS_DLL_PUBLIC_DEF int   plugin_want_minor = VERSION_MINOR;
+WS_DLL_PUBLIC_DEF int   plugin_want_major = VCD_WIRESHARK_VERSION_MAJOR;
+WS_DLL_PUBLIC_DEF int   plugin_want_minor = VCD_WIRESHARK_VERSION_MINOR;
 
 void wtap_register_vcd();
 
-static gboolean
+static VCD_CALLBACK_BOOL_RETURN_TYPE
 vcd_read(wtap *wth, wtap_rec *rec, Buffer *buf, int *err, gchar **err_info, gint64 *data_offset);
-static gboolean
+static VCD_CALLBACK_BOOL_RETURN_TYPE
 vcd_seek_read(wtap *wth, gint64 seek_off, wtap_rec *rec, Buffer *buf, int *err, gchar **err_info);
-static gboolean
+static VCD_CALLBACK_BOOL_RETURN_TYPE
 vcd_read_packet(wtap *wth, FILE_T fh, wtap_rec *rec, Buffer *buf, int *err, gchar **err_info);
 
 static int vcd_file_type_subtype;
@@ -39,7 +27,8 @@ vcd_open(wtap *wth, [[maybe_unused]] int *err, [[maybe_unused]] char **err_info)
 {
     std::size_t const file_size  = wtap_file_size(wth, err);
     std::size_t       read_bytes = 0;
-    // wtap_read_bytes_or_eof(wth->fh, buf, file_size, err, err_info);
+
+    // Read file header, until we reach keyword "$enddefinitions"
     while (read_bytes < file_size - 1) {
         if (char buf[file_size];
                 file_getsp(buf, static_cast<int>(file_size - read_bytes), wth->fh) != nullptr) {
@@ -67,7 +56,7 @@ vcd_open(wtap *wth, [[maybe_unused]] int *err, [[maybe_unused]] char **err_info)
  * indication. Report back where reading of this frame started to
  * support subsequent random access read.
  */
-static gboolean
+static VCD_CALLBACK_BOOL_RETURN_TYPE
 vcd_read(wtap *wth, wtap_rec *rec, Buffer *buf, int *err, gchar **err_info, gint64 *data_offset)
 {
     /* Report the current file location */
@@ -85,7 +74,7 @@ vcd_read(wtap *wth, wtap_rec *rec, Buffer *buf, int *err, gchar **err_info, gint
  * Read the frame at the given offset in the file. Store the frame data
  * in a buffer and fill in the packet header info.
  */
-static gboolean
+static VCD_CALLBACK_BOOL_RETURN_TYPE
 vcd_seek_read(wtap *wth, gint64 seek_off, wtap_rec *rec, Buffer *buf, int *err, gchar **err_info)
 {
     /* Seek to the desired file position at the start of the frame */
@@ -113,7 +102,7 @@ vcd_seek_read(wtap *wth, gint64 seek_off, wtap_rec *rec, Buffer *buf, int *err, 
  */
 static auto
 vcd_read_packet([[maybe_unused]] wtap *wth, FILE_T fh, wtap_rec *rec, Buffer *buf, int *err,
-        gchar **err_info) -> gboolean
+        gchar **err_info) -> VCD_CALLBACK_BOOL_RETURN_TYPE
 {
     guint8 bpf_hdr[18];
 
@@ -132,7 +121,7 @@ vcd_read_packet([[maybe_unused]] wtap *wth, FILE_T fh, wtap_rec *rec, Buffer *bu
             return false;
     }
 
-    /* Setup the per packet structure and fill it with info from this frame */
+    /* Set up the per packet structure and fill it with info from this frame */
     rec->rec_type       = REC_TYPE_PACKET;
     rec->presence_flags = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
     rec->ts.secs = static_cast<guint32>(bpf_hdr[3]) << 24 | static_cast<guint32>(bpf_hdr[2]) << 16 |
@@ -180,14 +169,14 @@ wtap_register_vcd()
     wtap_register_open_info(&oi, false);
 
     struct file_type_subtype_info fi = { "Value Change Dump", "VCD", "vcd", nullptr, false, false,
-#if VERSION_MAJOR <= 3 && VERSION_MINOR < 6
+#if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
         0,
 #else
         nullptr,
 #endif
         nullptr, nullptr, nullptr };
 
-#if VERSION_MAJOR <= 3 && VERSION_MINOR < 6
+#if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
     vcd_file_type_subtype = wtap_register_file_type_subtypes(&fi, WTAP_FILE_TYPE_SUBTYPE_UNKNOWN);
 #else
     vcd_file_type_subtype = wtap_register_file_type_subtype(&fi);
@@ -195,13 +184,13 @@ wtap_register_vcd()
 }
 
 extern "C" {
-WS_DLL_PUBLIC
-void
-plugin_register()
-{
-    static wtap_plugin plug_vcd;
+    WS_DLL_PUBLIC
+    void
+    plugin_register()
+    {
+        static wtap_plugin plug_vcd;
 
-    plug_vcd.register_wtap_module = wtap_register_vcd;
-    wtap_register_plugin(&plug_vcd);
-}
+        plug_vcd.register_wtap_module = wtap_register_vcd;
+        wtap_register_plugin(&plug_vcd);
+    }
 }
