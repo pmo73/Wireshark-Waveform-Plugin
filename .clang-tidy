@@ -1,0 +1,64 @@
+Checks: "*,
+         -altera-*,
+         -android-*,
+         -cert-*,
+         -concurrency-*,
+         -darwin-*,
+         -fuchsia-*,
+         -llvm-*,
+         -llvmlibc-*,
+         -objc-*,
+         -zircon-*,
+         -abseil-string-find-str-contains,
+         -bugprone-easily-swappable-parameters,
+         -bugprone-exception-escape,
+         -boost-use-ranges,
+         -cppcoreguidelines-avoid-*,
+         -cppcoreguidelines-non-private-member-variables-in-classes,
+         -cppcoreguidelines-owning-memory,
+         -cppcoreguidelines-pro-type-union-access,
+         -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+         -google-readability-todo,
+         -google-global-names-in-headers,
+         -hicpp-avoid-c-arrays,
+         -modernize-avoid-bind,
+         -modernize-avoid-c-arrays,
+         -modernize-return-braced-init-list,
+         -modernize-use-ranges,
+         -misc-non-private-member-variables-in-classes,
+         -misc-no-recursion,
+         -misc-confusable-identifiers,
+         -misc-include-cleaner,
+         -performance-avoid-endl,
+         -readability-magic-numbers,
+         -readability-use-anyofallof"
+CheckOptions:
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.GlobalVariableCase: UPPER_CASE
+  readability-identifier-naming.UnionCase: CamelCase
+  readability-identifier-naming.FunctionCase: lower_case
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.NamespaceCase: lower_case
+  readability-identifier-naming.TypedefCase: CamelCase
+  readability-identifier-naming.GlobalConstantCase: UPPER_CASE
+  readability-identifier-naming.LocalVariableCase: lower_case
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-length.MinimumVariableNameLength: 1
+  readability-identifier-length.MinimumParameterNameLength: 1
+  readability-function-cognitive-complexity.IgnoreMacros: true
+FormatStyle: file
+HeaderFileExtensions:
+  - ''
+  - h
+  - hh
+  - hpp
+  - hxx
+ImplementationFileExtensions:
+  - c
+  - cc
+  - cpp
+  - cxx
+HeaderFilterRegex: ''
+SystemHeaders: false
+UseColor: true
+WarningsAsErrors: '*'
