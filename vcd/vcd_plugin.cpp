@@ -1,6 +1,8 @@
 #include "vcd_plugin.hpp"
 #include "vcd_parser.hpp"
 
+#include <vector>
+
 WS_DLL_PUBLIC_DEF gchar plugin_version[]  = VCD_VERSION;                 // NOLINT
 WS_DLL_PUBLIC_DEF int   plugin_want_major = VCD_WIRESHARK_VERSION_MAJOR; // NOLINT
 WS_DLL_PUBLIC_DEF int   plugin_want_minor = VCD_WIRESHARK_VERSION_MINOR; // NOLINT
@@ -16,7 +18,7 @@ namespace
     auto vcd_read_packet(wtap *wth, FILE_T fh, wtap_rec *rec, Buffer *buf, int *err,
             gchar **err_info) -> VCD_CALLBACK_BOOL_RETURN_TYPE;
 
-    int VCD_FILE_TYPE_SUBTYPE;
+    int VCD_FILE_TYPE_SUBTYPE; // NOLINT
 
     /*
      * Try to interpret a file as a vcd formatted file.
@@ -24,18 +26,20 @@ namespace
      * read the individual frames. Return value indicates whether this is
      * recognized as a vcd file.
      */
-    wtap_open_return_val
+    auto
     vcd_open(wtap *wth, [[maybe_unused]] int *err, [[maybe_unused]] char **err_info)
+            -> wtap_open_return_val
     {
         std::size_t const file_size  = wtap_file_size(wth, err);
         std::size_t       read_bytes = 0;
 
         // Read file header, until we reach keyword "$enddefinitions"
         while (read_bytes < file_size - 1) {
-            if (char buf[file_size];
-                    file_getsp(buf, static_cast<int>(file_size - read_bytes), wth->fh) != nullptr) {
-                std::string const test { buf };
-                parse_header(test);
+            if (std::vector<char> buf(file_size);
+                    file_getsp(buf.data(), static_cast<int>(file_size - read_bytes), wth->fh) !=
+                    nullptr) {
+                std::string const test { buf.data() };
+                vcd_parser::parse_header(test);
                 read_bytes += test.size();
                 if (test.contains("$enddefinitions $end")) {
                     break;

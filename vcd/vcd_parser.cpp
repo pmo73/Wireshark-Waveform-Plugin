@@ -5,7 +5,7 @@
 #include <sstream>
 
 auto
-parse_header(std::string const &input) -> bool
+vcd_parser::parse_header(std::string const &input) -> bool
 {
     std::stringstream input_stream(input);
     std::string       segment;

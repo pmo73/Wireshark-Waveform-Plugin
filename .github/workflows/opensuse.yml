@@ -15,7 +15,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  Plugins:
     runs-on: ubuntu-latest
     container: opensuse/tumbleweed
     steps:
@@ -30,12 +30,14 @@ jobs:
           wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wsutil/file_util.h
 
       # Runs a set of commands using the runners shell
-      - name: Build project
+      - name: Build plugins
         run: |
           cmake .
           make -j$(nproc)
           make install
 
       # Test, if plugin is found
-      - name: Test
-        run: tshark -G plugins | grep -i -E "(error|couldn)" || true
+      - name: Test plugins
+        run: |
+          '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
+          'tshark -G plugins | grep -E "VCDReader.so.*file type"'

@@ -6,6 +6,8 @@
 #define VCD_PARSER_HPP
 #include <string>
 
-auto parse_header(std::string const &input) -> bool;
-
+namespace vcd_parser
+{
+    auto parse_header(std::string const &input) -> bool;
+}
 #endif // VCD_PARSER_HPP

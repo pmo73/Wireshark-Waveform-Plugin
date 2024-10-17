@@ -15,7 +15,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  Plugins:
     strategy:
       fail-fast: false
       matrix:
@@ -45,11 +45,13 @@ jobs:
         run: sudo wget -O /usr/include/wireshark/wsutil/file_util.h ${{ matrix.file-util-file }}
 
       # Runs a set of commands using the runners shell
-      - name: Build project
+      - name: Build plugins
         run: |
           cmake .
           make -j$(nproc)
           make install
 
-      - name: Test
-        run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
+      - name: Test plugins
+        run: |
+          '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
+          'tshark -G plugins | grep -E "VCDReader.so.*file type"'
