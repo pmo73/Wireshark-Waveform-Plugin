@@ -53,7 +53,7 @@ namespace
             } while (complete_line.find("$end ") == std::string::npos);
             vcd_parser::parse_header(complete_line, file_input);
             read_bytes += complete_line.size();
-            if (complete_line.find("$enddefinitions $end") != std::string::npos ) {
+            if (complete_line.find("$enddefinitions $end") != std::string::npos) {
                 break;
             }
         }
@@ -233,7 +233,7 @@ namespace
             .writing_must_seek          = false,
             .num_supported_blocks       = false,
 #if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
-            0,
+            .supported_blocks = 0,
 #else
             .supported_blocks = nullptr,
 #endif
