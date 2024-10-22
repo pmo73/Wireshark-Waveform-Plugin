@@ -4,6 +4,7 @@ build-essential
 wget
 cmake
 gcc
+gcc-9
 git
 git-lfs
 pulseview
@@ -23,6 +24,7 @@ qttools5-dev-tools
 designer-qt6
 flex
 g++
+g++-9
 gcc
 libc-ares-dev
 libgcrypt-dev

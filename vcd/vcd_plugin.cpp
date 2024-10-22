@@ -226,23 +226,20 @@ namespace
         wtap_register_open_info(&oi, false);
 
         constexpr file_type_subtype_info fi = {
-#if VCD_WIRESHARK_VERSION_MAJOR > 3 || \
-        (VCD_WIRESHARK_VERSION_MAJOR == 3 && VCD_WIRESHARK_VERSION_MINOR >= 6)
-            .description = "Value Change Dump",
-#endif
-            .name                       = "VCD",
-            .default_file_extension     = "vcd",
-            .additional_file_extensions = nullptr,
-            .writing_must_seek          = false,
-            .num_supported_blocks       = false,
+            "Value Change Dump",
+            "VCD",
+            "vcd",
+            nullptr,
+            false,
+            false,
 #if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
-            .supported_blocks = 0,
+            0,
 #else
-            .supported_blocks = nullptr,
+            nullptr,
 #endif
-            .can_write_encap = nullptr,
-            .dump_open       = nullptr,
-            .wslua_info      = nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
         };
 
 #if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
