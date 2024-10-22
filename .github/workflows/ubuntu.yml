@@ -50,8 +50,7 @@ jobs:
           cmake .
           make -j$(nproc)
           make install
+          tshark -G plugins
 
-      - name: Check if plugin is installed correctly
-        run: tshark -G plugins #| grep -E "VCDReader.so.*file type"
       - name: Test plugins for error
         run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
