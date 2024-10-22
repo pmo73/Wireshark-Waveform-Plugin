@@ -50,10 +50,10 @@ namespace
                 }
                 std::string const partial_line { buf.data() };
                 vcd_parser::helper::string_append_and_replace(complete_line, partial_line);
-            } while (not complete_line.contains("$end "));
+            } while (complete_line.find("$end ") == std::string::npos);
             vcd_parser::parse_header(complete_line, file_input);
             read_bytes += complete_line.size();
-            if (complete_line.contains("$enddefinitions $end")) {
+            if (complete_line.find("$enddefinitions $end") != std::string::npos ) {
                 break;
             }
         }

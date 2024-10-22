@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
         include:
           - os: ubuntu-22.04
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wiretap/wtap-int.h
@@ -51,7 +51,7 @@ jobs:
           make -j$(nproc)
           make install
 
-      - name: Test plugins
-        run: |
-          '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
-          'tshark -G plugins | grep -E "VCDReader.so.*file type"'
+      - name: Check if plugin is installed correctly
+        run: tshark -G plugins | grep -E "VCDReader.so.*file type"
+      - name: Test plugins for error
+        run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
