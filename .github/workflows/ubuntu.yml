@@ -38,7 +38,7 @@ jobs:
       # Runs a single command using the runners shell
       - name: Install packages
         run: |
-          sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev tshark build-essential cmake libgcrypt20-dev libgnutls28-dev
+          sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev tshark build-essential cmake libgcrypt20-dev libgnutls28-dev sudo
       - if: ${{ matrix.wtap-file }}
         run: sudo wget -O /usr/include/wireshark/wiretap/wtap-int.h ${{ matrix.wtap-file }}
       - if: ${{ matrix.file-util-file }}
@@ -49,7 +49,7 @@ jobs:
         run: |
           cmake -DINSTALL_PLUGIN_LOCAL=OFF .
           make -j$(nproc)
-          make install
+          sudo make install
           tshark -G plugins
 
       - name: Test plugins for error
