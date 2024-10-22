@@ -26,7 +26,8 @@ add_definitions(-DVCD_VERSION=\"${PROJECT_VERSION}\")
 
 add_library(${PROJECT_NAME} MODULE vcd_plugin.cpp
         vcd_parser.cpp
-        vcd_parser.hpp)
+)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" DEFINE_SYMBOL "")
 target_link_libraries(${PROJECT_NAME} epan)
 

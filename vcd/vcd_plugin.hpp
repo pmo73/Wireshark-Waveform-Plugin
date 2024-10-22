@@ -21,7 +21,7 @@ extern "C" {
 #define VCD_WIRESHARK_VERSION_MINOR VERSION_MINOR
 #define VCD_WIRESHARK_VERSION_PATCH VERSION_MIRCO
 #else
-#error "No wireshark for version check found"
+#error "No wireshark header for version check found"
 #endif
 
 ///////////////////////
