@@ -25,19 +25,19 @@ jobs:
       # Install needed packages
       - name: Install packages
         run: |
-          zypper update -y && zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++ wget
+          zypper update -y && zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++ wget sudo
           wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wiretap/wtap-int.h
           wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wsutil/file_util.h
 
       # Runs a set of commands using the runners shell
       - name: Build plugins
         run: |
-          cmake .
+          cmake -DINSTALL_PLUGIN_LOCAL=OFF .
           make -j$(nproc)
-          make install
+          sudo make install
 
-      # Test, if plugin is found
-      - name: Test plugins
-        run: |
-          '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
-          'tshark -G plugins | grep -E "VCDReader.so.*file type"'
+      - name: Check if plugin is installed correctly
+        run: tshark -G plugins | grep -E "VCDReader.so.*file type"
+
+      - name: Test plugins for error
+        run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
