@@ -7,7 +7,6 @@
 #include <iostream>
 #include <memory>
 #include <numeric>
-#include <ranges>
 #include <regex>
 #include <sstream>
 #include <vector>
@@ -129,8 +128,8 @@ namespace
 
             std::vector<std::uint8_t> line_buf {};
             line_buf.reserve(payload_size);
-            for (auto const &signal_data : file_input->signal_map | std::views::values) {
-                line_buf.emplace_back(signal_data->data[file_input->current_timestamp]);
+            for (auto const &[key, value] : file_input->signal_map) {
+                line_buf.emplace_back(value->data[file_input->current_timestamp]);
             }
             ws_buffer_assure_space(buf, line_buf.size());
             std::uint8_t *end_ptr = ws_buffer_end_ptr(buf);
@@ -151,8 +150,8 @@ namespace
 
         std::vector<std::uint8_t> line_buf {};
         line_buf.reserve(payload_size);
-        for (auto const &signal_data : file_input->signal_map | std::views::values) {
-            line_buf.emplace_back(signal_data->data[file_input->current_timestamp]);
+        for (auto const &[key, value] : file_input->signal_map) {
+            line_buf.emplace_back(value->data[file_input->current_timestamp]);
         }
         ws_buffer_assure_space(buf, line_buf.size());
         std::uint8_t *end_ptr = ws_buffer_end_ptr(buf);
@@ -190,8 +189,8 @@ namespace
 
         std::vector<std::uint8_t> line_buf {};
         line_buf.reserve(payload_size);
-        for (auto const &signal_data : file_input->signal_map | std::views::values) {
-            line_buf.emplace_back(signal_data->data[seek_off]);
+        for (auto const &[key, value] : file_input->signal_map) {
+            line_buf.emplace_back(value->data[seek_off]);
         }
         ws_buffer_assure_space(buf, line_buf.size());
         std::uint8_t *end_ptr = ws_buffer_end_ptr(buf);

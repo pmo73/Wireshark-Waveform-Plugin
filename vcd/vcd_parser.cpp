@@ -1,8 +1,8 @@
 #include "vcd_parser.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <ostream>
-#include <ranges>
 #include <sstream>
 
 auto
@@ -155,8 +155,8 @@ vcd_parser::process_single_bit(std::string const &input,
 auto
 vcd_parser::generate_packet(vcd_file_input::VcdFileInput *const file_input) -> bool
 {
-    for (auto const &signal_data : file_input->signal_map | std::views::values) {
-        signal_data->data.emplace_back(signal_data->data.back());
+    for (auto const &[key, value] : file_input->signal_map) {
+        value->data.emplace_back(value->data.back());
     }
     return true;
 }
