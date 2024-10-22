@@ -50,6 +50,7 @@ jobs:
           cmake -DINSTALL_PLUGIN_LOCAL=OFF .
           make -j$(nproc)
           sudo make install
+          tshark -G folders
 
       - name: Check if plugin is installed correctly
         run: tshark -G plugins | grep -E "VCDReader.so.*file type"
