@@ -47,7 +47,7 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Build plugins
         run: |
-          cmake .
+          cmake -DINSTALL_PLUGIN_LOCAL=OFF .
           make -j$(nproc)
           make install
           tshark -G plugins

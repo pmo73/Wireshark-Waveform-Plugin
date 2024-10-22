@@ -243,7 +243,7 @@ namespace
         };
 
 #if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
-        vcd_file_type_subtype =
+        VCD_FILE_TYPE_SUBTYPE =
                 wtap_register_file_type_subtypes(&fi, WTAP_FILE_TYPE_SUBTYPE_UNKNOWN);
 #else
         VCD_FILE_TYPE_SUBTYPE = wtap_register_file_type_subtype(&fi);
