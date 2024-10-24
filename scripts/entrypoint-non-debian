@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+#
+# Copyright 2017 - 2018 Ternaris
+# SPDX-License-Identifier: Apache 2.0
+
+set -e
+
+if [[ -n "$GITLAB_CI" ]]; then
+  exec "$@"
+fi
+
+if [[ -n "$DEBUG" ]]; then
+  set -x
+fi
+
+if [[ -n "$TIMEZONE" ]]; then
+  echo "$TIMEZONE" >/etc/timezone
+  ln -sf /usr/share/zoneinfo/"$TIMEZONE" /etc/localtime
+fi
+
+groupdel "$GROUP" &>/dev/null || true
+groupadd -og "$GROUP_ID" "$GROUP"
+
+useradd -M -u "$USER_ID" -g "$GROUP_ID" -d "/home/$USER" -s /bin/zsh "$USER"
+
+mkdir -p "/run/user/$USER_ID"
+chown "$USER:$GROUP" "/run/user/$USER_ID"
+
+groupdel video &>/dev/null || true
+groupadd -og "${VIDEO_GROUP_ID}" video
+gpasswd -a "${USER}" video
+
+RENDER_GROUP_ID=$(cat /etc/host-group | grep "^render" | cut -d: -f3)
+if ! [[ -z "$RENDER_GROUP_ID" ]]; then
+  echo "Adding user to \"render\" group ($RENDER_GROUP_ID)"
+  groupdel render &>/dev/null || true
+  groupadd -og "$RENDER_GROUP_ID" render
+  gpasswd -a "$USER" render
+fi
+
+for x in /etc/skel/.*; do
+  target="/home/$USER/$(basename "$x")"
+  if [[ ! -e "$target" ]]; then
+    cp -a "$x" "$target"
+    chown -R "$USER":"$GROUP" "$target"
+  fi
+done
+
+if [[ -z "$SKIP_ADEINIT" ]]; then
+  for x in /opt/*; do
+    if [[ -x "$x/.adeinit" ]]; then
+      echo "Initializing $x"
+      sudo -Hu "$USER" -- bash -lc "$x/.adeinit"
+      echo "Initializing $x done"
+    fi
+  done
+fi
+
+echo 'ADE startup completed.'
+exec "$@"

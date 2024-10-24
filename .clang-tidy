@@ -1,0 +1,44 @@
+Checks: "*,
+         -altera-*,
+         -android-*,
+         -cert-*,
+         -concurrency-*,
+         -darwin-*,
+         -fuchsia-*,
+         -llvmlibc*,
+         -objc-*,
+         -zircon-*,
+         -cppcoreguidelines-non-private-member-variables-in-classes,
+         -cppcoreguidelines-pro-type-union-access,
+         -misc-non-private-member-variables-in-classes,
+         -performance-avoid-endl"
+CheckOptions:
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.GlobalVariableCase: UPPER_CASE
+  readability-identifier-naming.UnionCase: CamelCase
+  readability-identifier-naming.FunctionCase: lower_case
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.NamespaceCase: lower_case
+  readability-identifier-naming.TypedefCase: CamelCase
+  readability-identifier-naming.GlobalConstantCase: UPPER_CASE
+  readability-identifier-naming.LocalVariableCase: lower_case
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-length.MinimumVariableNameLength: 1
+  readability-identifier-length.MinimumParameterNameLength: 1
+  readability-function-cognitive-complexity.IgnoreMacros: true
+FormatStyle: file
+HeaderFileExtensions:
+  - ''
+  - h
+  - hh
+  - hpp
+  - hxx
+ImplementationFileExtensions:
+  - c
+  - cc
+  - cpp
+  - cxx
+HeaderFilterRegex: ''
+SystemHeaders: false
+UseColor: true
+WarningsAsErrors: '*'

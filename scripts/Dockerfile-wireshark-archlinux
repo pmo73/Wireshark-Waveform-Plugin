@@ -1,0 +1,33 @@
+FROM archlinux:latest
+ARG WIRESHARK_VERSION=master
+
+RUN pacman -Syu --noconfirm && pacman -S --noconfirm wget vim gcc cmake make sudo zsh
+
+COPY entrypoint-non-debian /ade_entrypoint
+COPY env.sh /etc/profile.d/ade_env.sh
+# Install Wireshark related packages
+RUN wget -O /tmp/install-wireshark.sh https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/$WIRESHARK_VERSION/tools/arch-setup.sh && \
+    chmod u+x /tmp/install-wireshark.sh && /tmp/install-wireshark.sh --noconfirm
+#Install CLion
+RUN wget -O /tmp/clion.tar.gz "https://download.jetbrains.com/cpp/CLion-2024.2.2.tar.gz" && \
+        tar xzf /tmp/clion.tar.gz -C /opt/ && \
+        rm /tmp/clion.tar.gz && \
+        ln -s /opt/clion-2024.2.2/bin/clion /usr/bin/clion
+
+# Install Wireshark and fix header
+RUN pacman -Syu && pacman -S --noconfirm wireshark-qt wireshark-cli
+RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/$WIRESHARK_VERSION/wiretap/wtap-int.h && \
+    wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/$WIRESHARK_VERSION/wsutil/file_util.h
+
+COPY bashrc-git-prompt /
+RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \
+    rm /bashrc-git-prompt
+
+RUN echo 'ALL ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+RUN rm -r /tmp/*
+RUN pacman -Syu --noconfirm && \
+    rm -rf /var/lib/apt/lists/ && rm /root/.wget-hsts
+ENTRYPOINT ["/ade_entrypoint"]
+CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & while wait ${!}; test $? -ge 128; do true; done"]
+
