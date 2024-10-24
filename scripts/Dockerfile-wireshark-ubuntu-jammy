@@ -1,10 +1,11 @@
-FROM ubuntu:24.04
-RUN userdel -r ubuntu
+FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 ARG LLVM_VERSION=19
-ARG GCC_VERSION=14
+ARG WIRESHARK_VERSION=wireshark-3.6.2
 
-RUN apt-get update && apt-get install -y wget vim tzdata zsh sudo gettext-base locales keyboard-configuration software-properties-common curl lsb-release apt-utils linux-tools-generic gpg-agent
+RUN apt-get update && apt-get install -y wget vim tzdata zsh gettext-base locales keyboard-configuration sudo \
+    software-properties-common curl lsb-release apt-utils linux-tools-generic gpg-agent gcc g++ build-essential cmake \
+    wireshark-dev wireshark-common
 
 RUN locale-gen en_US.UTF-8; dpkg-reconfigure -f noninteractive locales
 ENV LANG en_US.UTF-8
@@ -13,28 +14,18 @@ ENV LC_ALL en_US.UTF-8
 
 COPY entrypoint /ade_entrypoint
 COPY env.sh /etc/profile.d/ade_env.sh
-# Add Repo for newest gcc
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test && apt install -y gcc-"$GCC_VERSION" g++-"$GCC_VERSION"
-#Install newest cmake
-RUN wget -O /tmp/cmake.sh https://apt.kitware.com/kitware-archive.sh && chmod u+x /tmp/cmake.sh && /tmp/cmake.sh && \
-    rm /tmp/cmake.sh && apt-get update -y && apt-get install -y --no-install-recommends cmake
 # Install newest llvm
 RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh "$LLVM_VERSION" all && rm llvm.sh
-# Install apt packages
-COPY apt-packages-wireshark /tmp/apt-packages
-RUN apt-get install -y $(cat /tmp/apt-packages)
+# Install Wireshark related packages
+RUN wget -O /tmp/install-wireshark.sh https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/tools/debian-setup.sh && \
+    chmod u+x /tmp/install-wireshark.sh && /tmp/install-wireshark.sh -y
 #Install CLion
 RUN wget -O /tmp/clion.tar.gz "https://download.jetbrains.com/cpp/CLion-2024.2.2.tar.gz" && \
         tar xzf /tmp/clion.tar.gz -C /opt/ && \
         rm /tmp/clion.tar.gz && \
         ln -s /opt/clion-2024.2.2/bin/clion /usr/bin/clion
 # Set compiler defaults
-RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-"$GCC_VERSION" 140 && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-"$GCC_VERSION" 140 && \
-    update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-"$GCC_VERSION" 140 && \
-    update-alternatives --auto g++ && \
-    update-alternatives --auto gcc && \
-    update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-"$LLVM_VERSION" 110  && \
+RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-"$LLVM_VERSION" 110  && \
     update-alternatives --install /usr/bin/clang clang /usr/bin/clang-"$LLVM_VERSION" 110  && \
     update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-"$LLVM_VERSION" 110  && \
     update-alternatives --install /usr/bin/run-clang-tidy run-clang-tidy /usr/bin/run-clang-tidy-"$LLVM_VERSION" 110  && \
@@ -52,8 +43,8 @@ RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-"$GCC_VERSION" 1
     update-alternatives --auto cc
 
 # Fix Wireshark Header
-RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wiretap/wtap-int.h && \
-    wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wsutil/file_util.h
+RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wiretap/wtap-int.h && \
+    wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wsutil/file_util.h
 
 COPY bashrc-git-prompt /
 RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \

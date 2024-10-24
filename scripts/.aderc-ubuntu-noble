@@ -1,0 +1,11 @@
+export ADE_DOCKER_RUN_ARGS="-v ${HOME}/.gitconfig:/home/${USER}/.gitconfig \
+    --rm \
+    --ipc=host \
+    --privileged \
+    --mount type=bind,source=/etc/group,target=/etc/host-group \
+    --mount type=bind,source=/dev,target=/dev \
+    --network=host"
+
+export ADE_IMAGES="
+    dev-wireshark-ubuntu:24.04
+"
