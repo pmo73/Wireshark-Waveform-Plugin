@@ -26,13 +26,13 @@ jobs:
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wsutil/file_util.h
           - os: opensuse/tumbleweed
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wiretap/wtap-int.h
-            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/heads/tags/master/wsutil/file_util.h
+            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/heads/master/wsutil/file_util.h
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
       - name: Install tar gzip
-        run: zypper update -y && zypper install -y tar
+        run: zypper update -y && zypper install -y tar gzip
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
@@ -68,13 +68,13 @@ jobs:
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wsutil/file_util.h
           - os: opensuse/tumbleweed
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wiretap/wtap-int.h
-            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/heads/tags/master/wsutil/file_util.h
+            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/heads/master/wsutil/file_util.h
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
       - name: Install tar gzip
-        run: zypper update -y && zypper install -y tar
+        run: zypper update -y && zypper install -y tar gzip
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
