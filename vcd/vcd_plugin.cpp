@@ -140,8 +140,9 @@ namespace
             rec->presence_flags                  = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
             rec->ts.secs                         = file_input->current_timestamp;
             rec->ts.nsecs                        = 0;
-            rec->rec_header.packet_header.caplen = line_buf.size();;
-            rec->rec_header.packet_header.len    = line_buf.size();
+            rec->rec_header.packet_header.caplen = line_buf.size();
+            ;
+            rec->rec_header.packet_header.len = line_buf.size();
             file_input->current_timestamp++;
             return true;
         }
@@ -224,20 +225,21 @@ namespace
         };
 
         wtap_register_open_info(&oi, false);
-
-        constexpr file_type_subtype_info fi = {
+        static constexpr std::array<supported_block_type, 1> usbdump_blocks_supported {
+            { WTAP_BLOCK_PACKET, BLOCK_NOT_SUPPORTED, NO_OPTIONS_SUPPORTED },
+        };
+        constexpr file_type_subtype_info fi {
             "Value Change Dump",
             "VCD",
             "vcd",
             nullptr,
             false,
-            false,
+            BLOCKS_SUPPORTED(usbdump_blocks_supported.data()),
 #if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
             0,
 #else
             nullptr,
 #endif
-            nullptr,
             nullptr,
             nullptr,
         };
