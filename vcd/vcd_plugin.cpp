@@ -140,7 +140,7 @@ namespace
             rec->presence_flags                  = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
             rec->ts.secs                         = file_input->current_timestamp;
             rec->ts.nsecs                        = 0;
-            rec->rec_header.packet_header.caplen = 0;
+            rec->rec_header.packet_header.caplen = line_buf.size();;
             rec->rec_header.packet_header.len    = line_buf.size();
             file_input->current_timestamp++;
             return true;
@@ -162,7 +162,7 @@ namespace
         rec->presence_flags                  = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
         rec->ts.secs                         = file_input->current_timestamp;
         rec->ts.nsecs                        = 0;
-        rec->rec_header.packet_header.caplen = 0;
+        rec->rec_header.packet_header.caplen = line_buf.size();
         rec->rec_header.packet_header.len    = line_buf.size();
         file_input->current_timestamp++;
         return true;
