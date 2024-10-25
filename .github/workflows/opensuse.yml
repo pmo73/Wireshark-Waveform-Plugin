@@ -28,9 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
-      - name: Install tar gzip
-        run: zypper update -y && zypper install -y tar gzip
-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
@@ -67,16 +64,13 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
-      - name: Install tar gzip
-        run: zypper update -y && zypper install -y tar gzip
-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
       # Install needed packages
       - name: Install packages
         run: |
-          zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++ wget sudo
+          zypper update -y && zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++ wget sudo
           wget -O /usr/include/wireshark/wiretap/wtap-int.h  ${{ matrix.wtap-file }}
           wget -O /usr/include/wireshark/wsutil/file_util.h  ${{ matrix.file-util-file }}
 
@@ -88,7 +82,7 @@ jobs:
           sudo make install
 
       - name: Check if plugin is installed correctly
-        run: tshark -G plugins | grep -E "VCDReader.so.*"
+        run: tshark -G plugins #| grep -E "VCDReader.so.*"
 
       - name: Test plugins for error
         run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
