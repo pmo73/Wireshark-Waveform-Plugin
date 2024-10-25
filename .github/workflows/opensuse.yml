@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
-      - name: Install tar
+      - name: Install tar gzip
         run: zypper update -y && zypper install -y tar
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -73,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
-      - name: Install tar
+      - name: Install tar gzip
         run: zypper update -y && zypper install -y tar
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
