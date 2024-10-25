@@ -82,7 +82,9 @@ jobs:
           sudo make install
 
       - name: Check if plugin is installed correctly
-        run: tshark -G plugins #| grep -E "VCDReader.so.*"
+        run: |
+          tshark -G plugins
+          tshark -G folders
 
       - name: Test plugins for error
         run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
