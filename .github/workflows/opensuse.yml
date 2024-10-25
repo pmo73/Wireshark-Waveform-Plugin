@@ -19,11 +19,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ opensuse/tumbleweed, "opensuse/leap:15" ]
+        os: [ opensuse/tumbleweed ]
         include:
-          - os: "opensuse/leap:15"
-            wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.8/wiretap/wtap-int.h
-            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.8/wsutil/file_util.h
           - os: opensuse/tumbleweed
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wsutil/file_util.h
@@ -61,11 +58,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ opensuse/tumbleweed, "opensuse/leap:15" ]
+        os: [ opensuse/tumbleweed ]
         include:
-          - os: "opensuse/leap:15"
-            wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.8/wiretap/wtap-int.h
-            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.8/wsutil/file_util.h
           - os: opensuse/tumbleweed
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wsutil/file_util.h
