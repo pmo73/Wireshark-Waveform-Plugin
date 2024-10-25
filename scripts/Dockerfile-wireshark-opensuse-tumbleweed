@@ -1,7 +1,7 @@
 FROM opensuse/tumbleweed
 ARG WIRESHARK_VERSION=master
 
-RUN zypper update -y && zypper install -n -y wget vim gcc gcc-c++ cmake make sudo zsh
+RUN zypper update -y && zypper install -n -y wget vim gcc gcc-c++ cmake make sudo zsh git
 
 COPY entrypoint-non-debian /ade_entrypoint
 COPY env.sh /etc/profile.d/ade_env.sh

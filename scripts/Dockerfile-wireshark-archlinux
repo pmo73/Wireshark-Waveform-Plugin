@@ -1,7 +1,7 @@
 FROM archlinux:latest
 ARG WIRESHARK_VERSION=master
 
-RUN pacman -Syu --noconfirm && pacman -S --noconfirm wget vim gcc cmake make sudo zsh
+RUN pacman -Syu --noconfirm && pacman -S --noconfirm wget vim gcc cmake make sudo zsh git
 
 COPY entrypoint-non-debian /ade_entrypoint
 COPY env.sh /etc/profile.d/ade_env.sh
