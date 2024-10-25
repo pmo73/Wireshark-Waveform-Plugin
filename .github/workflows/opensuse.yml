@@ -58,9 +58,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ opensuse/tumbleweed, opensuse/leap:15 ]
+        os: [ opensuse/tumbleweed, "opensuse/leap:15" ]
         include:
-          - os: ubuntu-22.04
+          - os: "opensuse/leap:15"
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wsutil/file_util.h
           - os: opensuse/tumbleweed
