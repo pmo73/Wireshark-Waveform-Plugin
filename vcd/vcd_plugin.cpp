@@ -3,6 +3,7 @@
 #include "vcd_file_input.hpp"
 #include "vcd_parser.hpp"
 
+#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -136,13 +137,38 @@ namespace
             std::memcpy(end_ptr, line_buf.data(), line_buf.size());
             end_ptr = static_cast<std::uint8_t *>(end_ptr + line_buf.size());
 
-            rec->rec_type                        = REC_TYPE_PACKET;
-            rec->presence_flags                  = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
-            rec->ts.secs                         = file_input->current_timestamp;
-            rec->ts.nsecs                        = 0;
+            rec->rec_type       = REC_TYPE_PACKET;
+            rec->presence_flags = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
+            switch (file_input->timescale) {
+
+                case vcd_file_input::TIMESCALE::SECONDS:
+                    rec->ts.secs  = file_input->current_timestamp;
+                    rec->ts.nsecs = 0;
+                    break;
+                case vcd_file_input::TIMESCALE::MILLISECONDS:
+                    rec->ts.secs = static_cast<std::int64_t>(
+                            static_cast<double>(file_input->current_timestamp) * 1e6 / 1e9);
+                    rec->ts.nsecs = static_cast<int>(std::fmod(
+                            static_cast<double>(file_input->current_timestamp) * 1e6, 1e-9));
+                    break;
+                case vcd_file_input::TIMESCALE::MICROSECONDS:
+                    rec->ts.secs = static_cast<std::int64_t>(
+                            static_cast<double>(file_input->current_timestamp) * 1e3 / 1e9);
+                    rec->ts.nsecs = static_cast<int>(std::fmod(
+                            static_cast<double>(file_input->current_timestamp) * 1e3, 1e-9));
+                    break;
+                case vcd_file_input::TIMESCALE::NANOSECONDS:
+                case vcd_file_input::TIMESCALE::PICOSECONDS:
+                case vcd_file_input::TIMESCALE::FEMTOSECONDS:
+                default:
+                    rec->ts.secs = static_cast<std::int64_t>(
+                            static_cast<double>(file_input->current_timestamp) / 1e9);
+                    rec->ts.nsecs = static_cast<int>(
+                            std::fmod(static_cast<double>(file_input->current_timestamp), 1e-9));
+            }
+
             rec->rec_header.packet_header.caplen = line_buf.size();
-            ;
-            rec->rec_header.packet_header.len = line_buf.size();
+            rec->rec_header.packet_header.len    = line_buf.size();
             file_input->current_timestamp++;
             return true;
         }
@@ -159,10 +185,36 @@ namespace
         std::memcpy(end_ptr, line_buf.data(), line_buf.size());
         end_ptr = static_cast<std::uint8_t *>(end_ptr + line_buf.size());
 
-        rec->rec_type                        = REC_TYPE_PACKET;
-        rec->presence_flags                  = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
-        rec->ts.secs                         = file_input->current_timestamp;
-        rec->ts.nsecs                        = 0;
+        rec->rec_type       = REC_TYPE_PACKET;
+        rec->presence_flags = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
+        switch (file_input->timescale) {
+
+            case vcd_file_input::TIMESCALE::SECONDS:
+                rec->ts.secs  = file_input->current_timestamp;
+                rec->ts.nsecs = 0;
+                break;
+            case vcd_file_input::TIMESCALE::MILLISECONDS:
+                rec->ts.secs = static_cast<std::int64_t>(
+                        static_cast<double>(file_input->current_timestamp) * 1e6 / 1e9);
+                rec->ts.nsecs = static_cast<int>(
+                        std::fmod(static_cast<double>(file_input->current_timestamp) * 1e6, 1e9));
+                break;
+            case vcd_file_input::TIMESCALE::MICROSECONDS:
+                rec->ts.secs = static_cast<std::int64_t>(
+                        static_cast<double>(file_input->current_timestamp) * 1e3 / 1e9);
+                rec->ts.nsecs = static_cast<int>(
+                        std::fmod(static_cast<double>(file_input->current_timestamp) * 1e3, 1e9));
+                break;
+            case vcd_file_input::TIMESCALE::NANOSECONDS:
+            case vcd_file_input::TIMESCALE::PICOSECONDS:
+            case vcd_file_input::TIMESCALE::FEMTOSECONDS:
+            default:
+                rec->ts.secs = static_cast<std::int64_t>(
+                        static_cast<double>(file_input->current_timestamp) / 1e9);
+                rec->ts.nsecs = static_cast<int>(
+                        std::fmod(static_cast<double>(file_input->current_timestamp), 1e9));
+        }
+
         rec->rec_header.packet_header.caplen = line_buf.size();
         rec->rec_header.packet_header.len    = line_buf.size();
         file_input->current_timestamp++;
