@@ -1,7 +1,10 @@
 # Wireshark-Waveform-Plugin
-
-![Ubuntu](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/ubuntu.yml/badge.svg?branch=main)
-![OpenSuSen Tumbleweed](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/opensuse.yml/badge.svg?branch=main)
+| **Distro** | **Version**                         | **Wireshark Version**   | **Status**                                                                                                              |
+|------------|-------------------------------------|-------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| Ubuntu     | 20.04 LTS<br>22.04 LTS<br>24.04 LTS | 3.2.6<br>3.6.2<br>4.2.2 | ![Ubuntu](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/ubuntu.yml/badge.svg?branch=main)        |
+| openSUSE   | Tumbleweed                          | latest                  | ![openSUSE](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/opensuse.yml/badge.svg?branch=main)    |
+| CentOS     | Stream 9                            | 3.4.10                  | ![CentOS](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/centos.yml/badge.svg?branch=main)        |
+| Archlinux  | latest                              | latest                  | ![Arch Linux](https://github.com/pmo73/Wireshark-Waveform-Plugin/actions/workflows/archlinux.yml/badge.svg?branch=main) |
 
 This repository adds to Wireshark the ability to analyze an AXI stream in Wireshark and combines this with a waveform
 based on PulseView.
