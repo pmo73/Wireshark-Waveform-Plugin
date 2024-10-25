@@ -1,0 +1,90 @@
+# This is a basic workflow to help you get started with Actions
+
+name: OpenSUSE
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  Global:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ archlinux ]
+        include:
+          - os: archlinux
+            wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wiretap/wtap-int.h
+            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wsutil/file_util.h
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: ${{ matrix.os }}
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      # Install needed packages
+      - name: Install packages
+        run: |
+          pacman -Syu --noconfirm && pacman -S --noconfirm wireshark-qt wireshark-cli cmake make gcc wget sudo
+          wget -O /usr/include/wireshark/wiretap/wtap-int.h  ${{ matrix.wtap-file }}
+          wget -O /usr/include/wireshark/wsutil/file_util.h  ${{ matrix.file-util-file }}
+
+      # Runs a set of commands using the runners shell
+      - name: Build plugins
+        run: |
+          cmake -DINSTALL_PLUGIN_LOCAL=OFF .
+          make -j$(nproc)
+          sudo make install
+
+      - name: Check if plugin is installed correctly
+        run: tshark -G plugins | grep -E "VCDReader.so.*"
+
+      - name: Test plugins for error
+        run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
+
+  Local:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ archlinux ]
+        include:
+          - os: archlinux
+            wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wiretap/wtap-int.h
+            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/master/wsutil/file_util.h
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: ${{ matrix.os }}
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      # Install needed packages
+      - name: Install packages
+        run: |
+          pacman -Syu --noconfirm && pacman -S --noconfirm wireshark-qt wireshark-cli cmake make gcc gcc-c++ wget sudo
+          wget -O /usr/include/wireshark/wiretap/wtap-int.h  ${{ matrix.wtap-file }}
+          wget -O /usr/include/wireshark/wsutil/file_util.h  ${{ matrix.file-util-file }}
+
+      # Runs a set of commands using the runners shell
+      - name: Build plugins
+        run: |
+          cmake .
+          make -j$(nproc)
+          sudo make install
+
+      - name: Check if plugin is installed correctly
+        run: |
+          tshark -G plugins
+          tshark -G folders
+
+      - name: Test plugins for error
+        run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
