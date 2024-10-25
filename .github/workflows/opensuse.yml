@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: OpenSUSE Tumbleweed
+name: OpenSUSE
 
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
@@ -19,9 +19,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ opensuse/tumbleweed, 'opensuse/leap:15' ]
+        os: [ opensuse/tumbleweed, "opensuse/leap:15" ]
         include:
-          - os: 'opensuse/leap:15'
+          - os: "opensuse/leap:15"
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.4.1/wsutil/file_util.h
           - os: opensuse/tumbleweed
