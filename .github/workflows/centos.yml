@@ -34,7 +34,7 @@ jobs:
       # Install needed packages
       - name: Install packages
         run: |
-          yum update -y && yum config-manager --enable crb && yum install -y wireshark wireshark-devel cmake make gcc g++ wget sudo
+          yum update -y && yum config-manager --enable crb && yum install -y wireshark wireshark-devel libgcrypt-devel gnutls-devel cmake make gcc g++ wget sudo
           wget -O /usr/include/wireshark/wiretap/wtap-int.h  ${{ matrix.wtap-file }}
           wget -O /usr/include/wireshark/wsutil/file_util.h  ${{ matrix.file-util-file }}
 
@@ -70,7 +70,7 @@ jobs:
       # Install needed packages
       - name: Install packages
         run: |
-          yum update -y && yum config-manager --enable crb && yum install -y wireshark wireshark-devel cmake make gcc g++ wget sudo
+          yum update -y && yum config-manager --enable crb && yum install -y wireshark wireshark-devel libgcrypt-devel gnutls-devel cmake make gcc g++ wget sudo
           wget -O /usr/include/wireshark/wiretap/wtap-int.h  ${{ matrix.wtap-file }}
           wget -O /usr/include/wireshark/wsutil/file_util.h  ${{ matrix.file-util-file }}
 
