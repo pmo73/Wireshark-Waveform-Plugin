@@ -29,7 +29,7 @@ jobs:
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/heads/tags/master/wsutil/file_util.h
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    container: ${{ matrix.os }}
+    container: opensuse/leap:15 #${{ matrix.os }}
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/heads/tags/master/wsutil/file_util.h
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    container: ${{ matrix.os }}
+    container: opensuse/leap:15 #${{ matrix.os }}
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
