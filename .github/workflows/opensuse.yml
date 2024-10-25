@@ -31,6 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
+      - name: Install tar
+        run: zypper update -y && zypper install -y tar
+
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
@@ -70,13 +73,16 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.os }}
     steps:
+      - name: Install tar
+        run: zypper update -y && zypper install -y tar
+
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
       # Install needed packages
       - name: Install packages
         run: |
-          zypper update -y && zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++ wget sudo
+          zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++ wget sudo
           wget -O /usr/include/wireshark/wiretap/wtap-int.h  ${{ matrix.wtap-file }}
           wget -O /usr/include/wireshark/wsutil/file_util.h  ${{ matrix.file-util-file }}
 
