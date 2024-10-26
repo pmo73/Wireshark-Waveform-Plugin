@@ -3,6 +3,7 @@
 #include "vcd_file_input.hpp"
 #include "vcd_parser.hpp"
 
+#include <array>
 #include <cmath>
 #include <cstring>
 #include <iostream>
