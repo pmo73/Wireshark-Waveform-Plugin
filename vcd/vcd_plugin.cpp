@@ -287,10 +287,11 @@ namespace
             "vcd",
             nullptr,
             false,
-            BLOCKS_SUPPORTED(usbdump_blocks_supported.data()),
 #if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
+            false,
             0,
 #else
+            BLOCKS_SUPPORTED(usbdump_blocks_supported.data()),
             nullptr,
 #endif
             nullptr,
