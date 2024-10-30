@@ -1,0 +1,62 @@
+FROM ubuntu:20.04
+ARG DEBIAN_FRONTEND=noninteractive
+ARG LLVM_VERSION=19
+ARG WIRESHARK_VERSION=wireshark-3.2.6
+
+RUN apt-get update && apt-get install -y wget vim tzdata zsh gettext-base locales keyboard-configuration sudo \
+    software-properties-common curl lsb-release apt-utils linux-tools-generic gpg-agent gcc g++ build-essential cmake \
+    wireshark-dev wireshark-common git
+
+RUN locale-gen en_US.UTF-8; dpkg-reconfigure -f noninteractive locales
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+COPY entrypoint /ade_entrypoint
+COPY env.sh /etc/profile.d/ade_env.sh
+# Install newest llvm
+RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh "$LLVM_VERSION" all && rm llvm.sh
+# Install Wireshark related packages
+RUN wget -O /tmp/install-wireshark.sh https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/tools/debian-setup.sh && \
+    chmod u+x /tmp/install-wireshark.sh && /tmp/install-wireshark.sh -y
+#Install CLion
+RUN wget -O /tmp/clion.tar.gz "https://download.jetbrains.com/cpp/CLion-2024.2.2.tar.gz" && \
+        tar xzf /tmp/clion.tar.gz -C /opt/ && \
+        rm /tmp/clion.tar.gz && \
+        ln -s /opt/clion-2024.2.2/bin/clion /usr/bin/clion
+# Set compiler defaults
+RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-"$LLVM_VERSION" 110  && \
+    update-alternatives --install /usr/bin/clang clang /usr/bin/clang-"$LLVM_VERSION" 110  && \
+    update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-"$LLVM_VERSION" 110  && \
+    update-alternatives --install /usr/bin/run-clang-tidy run-clang-tidy /usr/bin/run-clang-tidy-"$LLVM_VERSION" 110  && \
+    update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-"$LLVM_VERSION" 110  && \
+    update-alternatives --auto clang++  && \
+    update-alternatives --auto clang  && \
+    update-alternatives --auto clang-tidy  && \
+    update-alternatives --auto run-clang-tidy  && \
+    update-alternatives --auto clang-format  && \
+    update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 1000 && \
+    update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 500 && \
+    update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 1000 && \
+    update-alternatives --install /usr/bin/cc cc /usr/bin/clang 500 && \
+    update-alternatives --auto c++ && \
+    update-alternatives --auto cc
+
+# Fix Wireshark Header
+RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wiretap/wtap-int.h && \
+    wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wsutil/file_util.h
+
+COPY bashrc-git-prompt /
+RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \
+    rm /bashrc-git-prompt
+
+RUN echo 'ALL ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+RUN rm -r /tmp/*
+RUN apt-get update && \
+    apt-get -y dist-upgrade && \
+    apt-get autoremove -y && apt-get autoclean -y && \
+    rm -rf /var/lib/apt/lists/ && rm /root/.wget-hsts
+ENTRYPOINT ["/ade_entrypoint"]
+CMD ["/bin/sh", "-c", "trap 'exit 147' TERM; tail -f /dev/null & while wait ${!}; test $? -ge 128; do true; done"]
+
