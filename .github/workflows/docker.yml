@@ -16,9 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dockerfile: [ Dockerfile-ubuntu-noble ]
+        dockerfile: [ Dockerfile-wireshark-ubuntu-noble ]
         include:
-          - dockerfile: Dockerfile-ubuntu-noble
+          - dockerfile: Dockerfile-wireshark-ubuntu-noble
             tags: 'ubuntu-noble, latest'
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
