@@ -3,10 +3,7 @@ name: Publish Docker image
 on:
   push:
     branches: ['main']
-    paths: ['scripts/Dockerfile-*']
-  pull_request:
-    branches: [ "main" ]
-    paths: ['scripts/Dockerfile-*']
+    paths: ['scripts/**']
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -16,10 +13,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dockerfile: [ Dockerfile-wireshark-ubuntu-noble ]
+        dockerfile:
+          - Dockerfile-wireshark-ubuntu-noble
+          - Dockerfile-wireshark-ubuntu-jammy
+          - Dockerfile-wireshark-ubuntu-focal
+          - Dockerfile-wireshark-centos
+          - Dockerfile-wireshark-archlinux
+          - Dockerfile-wireshark-opensuse-tumbleweed
         include:
           - dockerfile: Dockerfile-wireshark-ubuntu-noble
             tags: 'bjoern97/wireshark-waveform-plugin:ubuntu-noble, bjoern97/wireshark-waveform-plugin:latest'
+          - dockerfile: Dockerfile-wireshark-ubuntu-jammy
+            tags: 'bjoern97/wireshark-waveform-plugin:ubuntu-jammy'
+          - dockerfile: Dockerfile-wireshark-ubuntu-focal
+            tags: 'bjoern97/wireshark-waveform-plugin:ubuntu-focal'
+          - dockerfile: Dockerfile-wireshark-centos
+            tags: 'bjoern97/wireshark-waveform-plugin:centos'
+          - dockerfile: Dockerfile-wireshark-archlinux
+            tags: 'bjoern97/wireshark-waveform-plugin:archlinux'
+          - dockerfile: Dockerfile-wireshark-opensuse-tumbleweed
+            tags: 'bjoern97/wireshark-waveform-plugin:tumbleweed'
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     permissions:
@@ -53,9 +66,9 @@ jobs:
           tags: ${{ matrix.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+      #- name: Generate artifact attestation
+      #  uses: actions/attest-build-provenance@v1
+      #  with:
+      #    subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+      #    subject-digest: ${{ steps.push.outputs.digest }}
+      #    push-to-registry: true
