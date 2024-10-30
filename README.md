@@ -24,36 +24,8 @@ git clone git@github.com:pmo73/Wireshark-Waveform-Plugin.git
 ```
 
 Per default the project will launch a container with the latest Ubuntu image. But there are also images supported for
-**Arch Linux**, **openSUSE** or **CentOS**. Before they can be used, the need to be built on the local computer. This
-can be done with the following commands:
-
-```shell
-# Built all container
-make buildAllDockerImages
-
-# Built latest Ubuntu container
-make buildUbuntuLatestDockerImage
-
-# Built Ubuntu 24.04 container
-make buildUbuntuNobleDockerImage
-
-# Built Ubuntu 22.04 container
-make buildUbuntuJammyDockerImage
-
-# Built Ubuntu 20.04 container
-make buildUbuntuFocalDockerImage
-
-# Built CentOS container
-make buildCentosDockerImage
-
-# Built openSUSE container
-make buildOpensuseTumbleweedDockerImage
-
-# Built Arch Linux container
-make buildArchLinuxDockerImage
-```
-
-After building, the following can be used to launch the container e.g.: `ade --rc scripts/.aderc-centos start`.
+**Arch Linux**, **openSUSE** or **CentOS**. The following can be used to download and launch the container e.g.:
+`ade --rc scripts/.aderc-centos start`.
 
 ### Usage without ADE
 
