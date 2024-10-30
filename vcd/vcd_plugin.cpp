@@ -278,9 +278,14 @@ namespace
         };
 
         wtap_register_open_info(&oi, false);
+
+#if VCD_WIRESHARK_VERSION_MAJOR > 3 || \
+        (VCD_WIRESHARK_VERSION_MAJOR == 3 && VCD_WIRESHARK_VERSION_MINOR >= 6)
         static constexpr std::array<supported_block_type, 1> usbdump_blocks_supported {
             { WTAP_BLOCK_PACKET, BLOCK_NOT_SUPPORTED, NO_OPTIONS_SUPPORTED },
         };
+#endif
+
         constexpr file_type_subtype_info fi {
             "Value Change Dump",
             "VCD",
