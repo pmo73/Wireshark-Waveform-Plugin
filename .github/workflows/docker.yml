@@ -47,7 +47,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./scripts
           file: ./scripts/${{ matrix.dockerfile }}
           push: true
           tags: ${{ matrix.tags }}
