@@ -50,7 +50,7 @@ jobs:
           context: ./scripts
           file: ./scripts/${{ matrix.dockerfile }}
           push: true
-          tags: ${{ matrix.tags }}
+          tags: bjoern97/wireshark-waveform-plugin:${{ matrix.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate artifact attestation
