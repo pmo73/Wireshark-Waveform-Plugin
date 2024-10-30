@@ -19,7 +19,7 @@ jobs:
         dockerfile: [ Dockerfile-wireshark-ubuntu-noble ]
         include:
           - dockerfile: Dockerfile-wireshark-ubuntu-noble
-            tags: 'ubuntu-noble, latest'
+            tags: 'bjoern97/wireshark-waveform-plugin:ubuntu-noble, bjoern97/wireshark-waveform-plugin:latest'
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     permissions:
@@ -50,7 +50,7 @@ jobs:
           context: ./scripts
           file: ./scripts/${{ matrix.dockerfile }}
           push: true
-          tags: bjoern97/wireshark-waveform-plugin:${{ matrix.tags }}
+          tags: ${{ matrix.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate artifact attestation
