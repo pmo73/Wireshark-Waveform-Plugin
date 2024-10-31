@@ -31,10 +31,13 @@ extern "C" {
 #include "wiretap/wtap-int.h"
 }
 
+#define VCD_WIRESHARK_VERSION_GE(major, minor)                                               \
+    ((VCD_WIRESHARK_VERSION_MAJOR > (major)) || ((VCD_WIRESHARK_VERSION_MAJOR == (major)) && \
+                                                        (VCD_WIRESHARK_VERSION_MINOR >= (minor))))
+
 // Define return type for callback functions, because of issue 19116
 // (https://gitlab.com/wireshark/wireshark/-/issues/19116)
-#if VCD_WIRESHARK_VERSION_MAJOR > 4 || \
-        (VCD_WIRESHARK_VERSION_MAJOR == 4 && VCD_WIRESHARK_VERSION_MINOR >= 4)
+#if VCD_WIRESHARK_VERSION_GE(4, 4)
 using VCD_CALLBACK_BOOL_RETURN_TYPE = bool;
 #else
 using VCD_CALLBACK_BOOL_RETURN_TYPE = gboolean;

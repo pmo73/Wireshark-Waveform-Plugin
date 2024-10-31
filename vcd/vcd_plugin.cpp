@@ -23,6 +23,8 @@ namespace
 
     auto vcd_read(wtap *wth, wtap_rec *rec, Buffer *buf, int *err, gchar **err_info,
             gint64 *data_offset) -> VCD_CALLBACK_BOOL_RETURN_TYPE;
+    auto vcd_read_packet(wtap_rec *rec, Buffer *buf, vcd_file_input::VcdFileInput *file_input,
+            std::size_t payload_size, std::int64_t offset) -> VCD_CALLBACK_BOOL_RETURN_TYPE;
     auto vcd_seek_read(wtap *wth, gint64 seek_off, wtap_rec *rec, Buffer *buf, int *err,
             gchar **err_info) -> VCD_CALLBACK_BOOL_RETURN_TYPE;
 
@@ -105,7 +107,7 @@ namespace
                     return value + map.second->data_bytes;
                 });
 
-        if (file_input->current_timestamp >= file_input->next_timestamp - 1) {
+        if (file_input->current_timestamp >= file_input->next_timestamp) {
             std::string complete_command;
             if (read_bytes >= file_size - 1) {
                 return false;
@@ -128,63 +130,27 @@ namespace
             vcd_parser::parse_text_line(complete_command, file_input);
             *data_offset = file_input->current_timestamp;
 
-            std::vector<std::uint8_t> line_buf {};
-            line_buf.reserve(payload_size);
-            for (auto const &[key, value] : file_input->signal_map) {
-                line_buf.emplace_back(value->data[file_input->current_timestamp]);
-            }
-            ws_buffer_assure_space(buf, line_buf.size());
-            std::uint8_t *end_ptr = ws_buffer_end_ptr(buf);
-            std::memcpy(end_ptr, line_buf.data(), line_buf.size());
-            end_ptr = static_cast<std::uint8_t *>(end_ptr + line_buf.size());
-
-            rec->rec_type       = REC_TYPE_PACKET;
-            rec->presence_flags = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
-            switch (file_input->timescale) {
-
-                case vcd_file_input::TIMESCALE::SECONDS:
-                    rec->ts.secs  = file_input->current_timestamp;
-                    rec->ts.nsecs = 0;
-                    break;
-                case vcd_file_input::TIMESCALE::MILLISECONDS:
-                    rec->ts.secs = static_cast<std::int64_t>(
-                            static_cast<double>(file_input->current_timestamp) * 1e6 / 1e9);
-                    rec->ts.nsecs = static_cast<int>(std::fmod(
-                            static_cast<double>(file_input->current_timestamp) * 1e6, 1e-9));
-                    break;
-                case vcd_file_input::TIMESCALE::MICROSECONDS:
-                    rec->ts.secs = static_cast<std::int64_t>(
-                            static_cast<double>(file_input->current_timestamp) * 1e3 / 1e9);
-                    rec->ts.nsecs = static_cast<int>(std::fmod(
-                            static_cast<double>(file_input->current_timestamp) * 1e3, 1e-9));
-                    break;
-                case vcd_file_input::TIMESCALE::NANOSECONDS:
-                case vcd_file_input::TIMESCALE::PICOSECONDS:
-                case vcd_file_input::TIMESCALE::FEMTOSECONDS:
-                default:
-                    rec->ts.secs = static_cast<std::int64_t>(
-                            static_cast<double>(file_input->current_timestamp) / 1e9);
-                    rec->ts.nsecs = static_cast<int>(
-                            std::fmod(static_cast<double>(file_input->current_timestamp), 1e-9));
-            }
-
-            rec->rec_header.packet_header.caplen = line_buf.size();
-            rec->rec_header.packet_header.len    = line_buf.size();
-            file_input->current_timestamp++;
-            return true;
+            return vcd_read_packet(rec, buf, file_input, payload_size,
+                    file_input->current_timestamp);
         }
         vcd_parser::generate_packet(file_input);
         *data_offset = file_input->current_timestamp;
+        return vcd_read_packet(rec, buf, file_input, payload_size, file_input->current_timestamp);
+    }
 
+    auto
+    vcd_read_packet(wtap_rec *rec, Buffer *buf, vcd_file_input::VcdFileInput *const file_input,
+            std::size_t const payload_size, std::int64_t const offset)
+            -> VCD_CALLBACK_BOOL_RETURN_TYPE
+    {
         std::vector<std::uint8_t> line_buf {};
         line_buf.reserve(payload_size);
         for (auto const &[key, value] : file_input->signal_map) {
-            line_buf.emplace_back(value->data[file_input->current_timestamp]);
+            line_buf.emplace_back(value->data[offset]);
         }
         ws_buffer_assure_space(buf, line_buf.size());
         std::uint8_t *end_ptr = ws_buffer_end_ptr(buf);
         std::memcpy(end_ptr, line_buf.data(), line_buf.size());
-        end_ptr = static_cast<std::uint8_t *>(end_ptr + line_buf.size());
 
         rec->rec_type       = REC_TYPE_PACKET;
         rec->presence_flags = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
@@ -241,22 +207,7 @@ namespace
                     return value + map.second->data_bytes;
                 });
 
-        std::vector<std::uint8_t> line_buf {};
-        line_buf.reserve(payload_size);
-        for (auto const &[key, value] : file_input->signal_map) {
-            line_buf.emplace_back(value->data[seek_off]);
-        }
-        ws_buffer_assure_space(buf, line_buf.size());
-        std::uint8_t *end_ptr = ws_buffer_end_ptr(buf);
-        std::memcpy(end_ptr, line_buf.data(), line_buf.size());
-        end_ptr = static_cast<std::uint8_t *>(end_ptr + line_buf.size());
-
-        rec->rec_type                        = REC_TYPE_PACKET;
-        rec->presence_flags                  = WTAP_HAS_TS | WTAP_HAS_CAP_LEN;
-        rec->ts.secs                         = seek_off;
-        rec->ts.nsecs                        = 0;
-        rec->rec_header.packet_header.caplen = 0;
-        rec->rec_header.packet_header.len    = line_buf.size();
+        vcd_read_packet(rec, buf, file_input, payload_size, seek_off);
         return true;
     }
 
@@ -279,8 +230,7 @@ namespace
 
         wtap_register_open_info(&oi, false);
 
-#if VCD_WIRESHARK_VERSION_MAJOR > 3 || \
-        (VCD_WIRESHARK_VERSION_MAJOR == 3 && VCD_WIRESHARK_VERSION_MINOR >= 6)
+#if VCD_WIRESHARK_VERSION_GE(3, 6)
         static constexpr std::array<supported_block_type, 1> usbdump_blocks_supported {
             { WTAP_BLOCK_PACKET, BLOCK_NOT_SUPPORTED, NO_OPTIONS_SUPPORTED },
         };
@@ -292,22 +242,22 @@ namespace
             "vcd",
             nullptr,
             false,
-#if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
-            false,
-            0,
-#else
+#if VCD_WIRESHARK_VERSION_GE(3, 6)
             BLOCKS_SUPPORTED(usbdump_blocks_supported.data()),
             nullptr,
+#else
+            false,
+            0,
 #endif
             nullptr,
             nullptr,
         };
 
-#if VCD_WIRESHARK_VERSION_MAJOR <= 3 && VCD_WIRESHARK_VERSION_MINOR < 6
+#if VCD_WIRESHARK_VERSION_GE(3, 6)
+        VCD_FILE_TYPE_SUBTYPE = wtap_register_file_type_subtype(&fi);
+#else
         VCD_FILE_TYPE_SUBTYPE =
                 wtap_register_file_type_subtypes(&fi, WTAP_FILE_TYPE_SUBTYPE_UNKNOWN);
-#else
-        VCD_FILE_TYPE_SUBTYPE = wtap_register_file_type_subtype(&fi);
 #endif
     }
 } // namespace
