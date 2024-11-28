@@ -9,21 +9,45 @@ auto
 vcd_parser::parse_header(std::string const &input, vcd_file_input::VcdFileInput *const file_input)
         -> bool
 {
-    std::stringstream        input_stream(input);
-    std::string              segment;
-    std::vector<std::string> seglist;
-
-    while (std::getline(input_stream, segment, ' ')) {
-        seglist.push_back(segment);
+    std::string              input_copy = input;
+    std::vector<std::string> commands {};
+    std::size_t              pos       = 0;
+    std::string const        delimiter = "$end ";
+    commands.reserve(input_copy.size());
+    while ((pos = input_copy.find(delimiter)) != std::string::npos) {
+        if (std::string const token = input_copy.substr(0, pos - 1);
+                token != " " and not token.empty()) {
+            commands.emplace_back(token);
+        }
+        input_copy.erase(0, pos + delimiter.length());
     }
-    if (seglist[0] == "$timescale") {
-        parse_timescale(seglist, file_input);
-    } else if (seglist[0] == "$scope") {
-        parse_scope(seglist, file_input, false);
-    } else if (seglist[0] == "$upscope") {
-        parse_scope(seglist, file_input, true);
-    } else if (seglist[0] == "$var") {
-        parse_header_var(seglist, file_input);
+    if (input_copy != " " and not input_copy.empty()) {
+        commands.emplace_back(input_copy);
+    }
+    return parse_commands(commands, file_input);
+}
+auto
+vcd_parser::parse_commands(std::vector<std::string> const &commands,
+        vcd_file_input::VcdFileInput *const                file_input) -> bool
+{
+
+    for (auto const &command : commands) {
+        std::stringstream        input_stream(command);
+        std::string              segment;
+        std::vector<std::string> seglist;
+
+        while (std::getline(input_stream, segment, ' ')) {
+            seglist.push_back(segment);
+        }
+        if (seglist[0] == "$timescale") {
+            parse_timescale(seglist, file_input);
+        } else if (seglist[0] == "$scope") {
+            parse_scope(seglist, file_input, false);
+        } else if (seglist[0] == "$upscope") {
+            parse_scope(seglist, file_input, true);
+        } else if (seglist[0] == "$var") {
+            parse_header_var(seglist, file_input);
+        }
     }
     return true;
 }
@@ -82,7 +106,7 @@ auto
 vcd_parser::parse_header_var(std::vector<std::string> const &input,
         vcd_file_input::VcdFileInput *const                  file_input) -> bool
 {
-    if (input.size() > 5) {
+    if (input.size() > 4) {
         vcd_file_input::ChannelType channel_type {};
         std::string const          &type       = input[1];
         std::size_t const           bit_width  = std::strtoull(input[2].c_str(), nullptr, 10);
@@ -126,7 +150,7 @@ vcd_parser::parse_text_line(std::string const &input,
             process_single_bit(segment, file_input);
         }
     }
-    file_input->last_command = input;
+    file_input->last_read_command = input;
 
     return true;
 }
@@ -161,10 +185,24 @@ vcd_parser::generate_packet(vcd_file_input::VcdFileInput *const file_input) -> b
     return true;
 }
 
+namespace
+{
+    auto
+    both_are_spaces(char const lhs, char const rhs) -> bool
+    {
+        return (lhs == rhs) && (lhs == ' ');
+    }
+} // namespace
+
 auto
 vcd_parser::helper::string_append_and_replace(std::string &dest, std::string const &src) -> void
 {
     std::string src_replaced = src;
     std::replace(src_replaced.begin(), src_replaced.end(), '\n', ' ');
+
+    // Trim multiple whitespaces
+    std::string::iterator const new_end =
+            std::unique(src_replaced.begin(), src_replaced.end(), both_are_spaces);
+    src_replaced.erase(new_end, src_replaced.end());
     dest.append(src_replaced);
 }

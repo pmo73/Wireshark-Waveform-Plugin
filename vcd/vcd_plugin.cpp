@@ -41,26 +41,35 @@ namespace
 
         std::size_t const file_size  = wtap_file_size(wth, err);
         std::size_t       read_bytes = 0;
+        std::string       complete_line;
 
-        // Read file header, until we reach keyword "$enddefinitions"
+        // Read file header, until we read first timestamp
         while (read_bytes < file_size - 1) {
-            std::string complete_line;
-            do {
-                std::vector<char> buf {};
-                buf.reserve(file_size);
-                if (file_getsp(buf.data(), static_cast<int>(file_size - read_bytes), wth->fh) ==
-                        nullptr) {
-                    return WTAP_OPEN_ERROR;
-                }
-                std::string const partial_line { buf.data() };
-                vcd_parser::helper::string_append_and_replace(complete_line, partial_line);
-            } while (complete_line.find("$end ") == std::string::npos);
-            vcd_parser::parse_header(complete_line, file_input);
-            read_bytes += complete_line.size();
-            if (complete_line.find("$enddefinitions $end") != std::string::npos) {
+            std::vector<char> buf {};
+            buf.reserve(file_size);
+
+            // read next new line from file
+            if (file_getsp(buf.data(), static_cast<int>(file_size - read_bytes), wth->fh) ==
+                    nullptr) {
+                return WTAP_OPEN_ERROR;
+            }
+
+            // convert current read line to string and count bytes
+            std::string const partial_line { buf.data() };
+            read_bytes += partial_line.size();
+
+            // Abort if we reached the first timestamp
+            if (partial_line.starts_with("#")) {
+                file_input->last_read_command = partial_line;
                 break;
             }
+
+            // Append bytes to complete line
+            vcd_parser::helper::string_append_and_replace(complete_line, partial_line);
         }
+
+        // Parse complete header
+        vcd_parser::parse_header(complete_line, file_input);
 
         wth->priv              = static_cast<void *>(file_input);
         wth->subtype_read      = vcd_read;

@@ -58,11 +58,11 @@ namespace vcd_file_input
         bool                                 append_to_common_module {};
         std::vector<std::shared_ptr<Module>> modules { std::make_shared<Module>("Common") };
         std::map<std::string, std::shared_ptr<Signal>> signal_map;
-        std::string                                    last_command;
+        std::string                                    last_read_command;
         std::string                                    current_command;
         std::int64_t                                   last_timestamp { -1 };
         std::int64_t                                   current_timestamp { -1 };
-        std::int64_t                                   next_timestamp { 0 };
+        std::int64_t                                   next_timestamp { -1 };
     };
 
 } // namespace vcd_file_input

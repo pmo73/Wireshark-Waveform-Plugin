@@ -10,6 +10,8 @@
 namespace vcd_parser
 {
     auto parse_header(std::string const &input, vcd_file_input::VcdFileInput *file_input) -> bool;
+    auto
+    parse_commands(std::vector<std::string> const &commands, vcd_file_input::VcdFileInput *file_input) -> bool;
     auto parse_timescale(std::vector<std::string> const &input,
             vcd_file_input::VcdFileInput                *file_input) -> bool;
     auto parse_scope(std::vector<std::string> const &input,
