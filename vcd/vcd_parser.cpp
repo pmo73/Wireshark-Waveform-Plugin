@@ -1,8 +1,10 @@
 #include "vcd_parser.hpp"
 
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include <ostream>
+#include <regex>
 #include <sstream>
 
 auto
@@ -26,6 +28,32 @@ vcd_parser::parse_header(std::string const &input, vcd_file_input::VcdFileInput 
     }
     return parse_commands(commands, file_input);
 }
+
+auto
+vcd_parser::split_payload_commands(std::string const &input,
+        vcd_file_input::VcdFileInput *const           file_input) -> bool
+{
+
+    std::regex const           rgx("(#[0-9]+)(((?!#[0-9]+).)*)");
+    std::string                input_copy   = input;
+    constexpr int              submatches[] = { 1, 2 };
+    std::sregex_token_iterator iter_timestamp(input_copy.begin(), input_copy.end(), rgx,
+            submatches);
+    for (std::sregex_token_iterator const end; iter_timestamp != end; ++iter_timestamp) {
+        std::string token = *iter_timestamp;
+        if (iter_timestamp != end) {
+            ++iter_timestamp;
+            token.append(*iter_timestamp);
+        }
+        file_input->payload_commands.emplace_back(token);
+    }
+
+    for (auto const &[identifier, signal] : file_input->signal_map) {
+        signal->data.reserve(file_input->payload_commands.size());
+    }
+    return true;
+}
+
 auto
 vcd_parser::parse_commands(std::vector<std::string> const &commands,
         vcd_file_input::VcdFileInput *const                file_input) -> bool
@@ -41,11 +69,14 @@ vcd_parser::parse_commands(std::vector<std::string> const &commands,
         }
         if (seglist[0] == "$timescale") {
             parse_timescale(seglist, file_input);
-        } else if (seglist[0] == "$scope") {
+        }
+        if (seglist[0] == "$scope") {
             parse_scope(seglist, file_input, false);
-        } else if (seglist[0] == "$upscope") {
+        }
+        if (seglist[0] == "$upscope") {
             parse_scope(seglist, file_input, true);
-        } else if (seglist[0] == "$var") {
+        }
+        if (seglist[0] == "$var") {
             parse_header_var(seglist, file_input);
         }
     }
@@ -58,31 +89,32 @@ vcd_parser::parse_timescale(std::vector<std::string> const &input,
     std::uint64_t quotient {};
     if (input.size() > 2) {
         if (input[2] == "fs") {
-            quotient              = 1e15;
+            quotient              = QUOTIENT_FS;
             file_input->timescale = vcd_file_input::TIMESCALE::FEMTOSECONDS;
         } else if (input[2] == "ps") {
-            quotient              = 1e12;
+            quotient              = QUOTIENT_PS;
             file_input->timescale = vcd_file_input::TIMESCALE::PICOSECONDS;
         } else if (input[2] == "ns") {
-            quotient              = 1e9;
+            quotient              = QUOTIENT_NS;
             file_input->timescale = vcd_file_input::TIMESCALE::NANOSECONDS;
         } else if (input[2] == "us") {
-            quotient              = 1e6;
+            quotient              = QUOTIENT_US;
             file_input->timescale = vcd_file_input::TIMESCALE::MICROSECONDS;
         } else if (input[2] == "ms") {
-            quotient              = 1e3;
+            quotient              = QUOTIENT_MS;
             file_input->timescale = vcd_file_input::TIMESCALE::MILLISECONDS;
         } else if (input[2] == "s") {
-            quotient              = 1;
+            quotient              = QUOTIENT_S;
             file_input->timescale = vcd_file_input::TIMESCALE::SECONDS;
         } else {
             throw std::logic_error("Unknown time scale");
             return false;
         }
-        file_input->timescale_factor = std::strtoull(input[1].c_str(), nullptr, 10);
+        file_input->timescale_factor = std::strtoull(input[1].c_str(), nullptr, DECIMAL_BASE);
         file_input->sample_rate      = quotient / file_input->timescale_factor;
+        return true;
     }
-    return true;
+    return false;
 }
 
 auto
@@ -108,10 +140,10 @@ vcd_parser::parse_header_var(std::vector<std::string> const &input,
 {
     if (input.size() > 4) {
         vcd_file_input::ChannelType channel_type {};
-        std::string const          &type       = input[1];
-        std::size_t const           bit_width  = std::strtoull(input[2].c_str(), nullptr, 10);
-        std::string const          &identifier = input[3];
-        std::string const          &name       = input[4];
+        std::string const          &type = input[1];
+        std::size_t const  bit_width     = std::strtoull(input[2].c_str(), nullptr, DECIMAL_BASE);
+        std::string const &identifier    = input[3];
+        std::string const &name          = input[4];
         if (type == "reg" || type == "wire" || type == "logic") {
             channel_type = vcd_file_input::ChannelType::LOGICAL;
         } else {
@@ -127,7 +159,6 @@ vcd_parser::parse_header_var(std::vector<std::string> const &input,
                 file_input->modules.back()->signals.emplace_back(signal);
             }
         }
-
         return true;
     }
     return false;
@@ -150,7 +181,6 @@ vcd_parser::parse_text_line(std::string const &input,
             process_single_bit(segment, file_input);
         }
     }
-    file_input->last_read_command = input;
 
     return true;
 }
@@ -161,8 +191,22 @@ vcd_parser::process_timestamp(std::string const &input,
 {
 
     std::string const timestamp = input.substr(1);
-    file_input->next_timestamp  = std::strtoull(timestamp.c_str(), nullptr, 10);
+    file_input->current_timestamp =
+            static_cast<std::int64_t>(std::strtoull(timestamp.c_str(), nullptr, DECIMAL_BASE));
     return true;
+}
+
+auto
+vcd_parser::get_current_timestamp_from_command(std::string const &input) -> std::int64_t
+{
+    std::stringstream        input_stream(input);
+    std::string              segments;
+    std::vector<std::string> seglist;
+
+    while (std::getline(input_stream, segments, ' ')) {
+        seglist.push_back(segments);
+    }
+    return std::strtoll(seglist[0].substr(1).c_str(), nullptr, DECIMAL_BASE);
 }
 
 auto
@@ -170,10 +214,10 @@ vcd_parser::process_single_bit(std::string const &input,
         vcd_file_input::VcdFileInput *const       file_input) -> bool
 {
 
-    std::string identifier = input.substr(1);
-    std::string value      = input.substr(0, 1);
-    file_input->signal_map[identifier]->data.emplace_back(
-            std::strtoull(value.c_str(), nullptr, 10));
+    std::string const identifier = input.substr(1);
+    std::string const value      = input.substr(0, 1);
+    file_input->signal_map[identifier]->data[file_input->current_timestamp] =
+            std::strtoull(value.c_str(), nullptr, DECIMAL_BASE);
     return true;
 }
 auto

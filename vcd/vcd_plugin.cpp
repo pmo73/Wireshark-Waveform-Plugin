@@ -42,11 +42,12 @@ namespace
         std::size_t const file_size  = wtap_file_size(wth, err);
         std::size_t       read_bytes = 0;
         std::string       complete_line;
+        std::string       first_payload_command;
 
         // Read file header, until we read first timestamp
         while (read_bytes < file_size - 1) {
             std::vector<char> buf {};
-            buf.reserve(file_size);
+            buf.reserve(file_size - read_bytes);
 
             // read next new line from file
             if (file_getsp(buf.data(), static_cast<int>(file_size - read_bytes), wth->fh) ==
@@ -60,7 +61,7 @@ namespace
 
             // Abort if we reached the first timestamp
             if (partial_line.starts_with("#")) {
-                file_input->last_read_command = partial_line;
+                vcd_parser::helper::string_append_and_replace(first_payload_command, partial_line);
                 break;
             }
 
@@ -97,6 +98,26 @@ namespace
                 std::cerr << "Time scale not recognised!" << std::endl;
         }
 
+        // Read payload
+        complete_line = first_payload_command;
+        while (read_bytes < file_size - 1) {
+            std::vector<char> buf {};
+            buf.reserve(file_size - read_bytes);
+            // read next new line from file
+            if (file_getsp(buf.data(), static_cast<int>(file_size - read_bytes), wth->fh) ==
+                    nullptr) {
+                return WTAP_OPEN_ERROR;
+            }
+
+            // convert current read line to string and count bytes
+            std::string const partial_line { buf.data() };
+            read_bytes += partial_line.size();
+
+            // Append bytes to complete line
+            vcd_parser::helper::string_append_and_replace(complete_line, partial_line);
+        }
+        vcd_parser::split_payload_commands(complete_line, file_input);
+
         return WTAP_OPEN_MINE;
     }
 
@@ -105,9 +126,7 @@ namespace
             [[maybe_unused]] gchar **err_info, gint64 *data_offset) -> VCD_CALLBACK_BOOL_RETURN_TYPE
     {
 
-        auto *const       file_input = static_cast<vcd_file_input::VcdFileInput *>(wth->priv);
-        std::size_t       read_bytes = file_tell(wth->fh);
-        std::size_t const file_size  = wtap_file_size(wth, err);
+        auto *const file_input = static_cast<vcd_file_input::VcdFileInput *>(wth->priv);
         static std::size_t const payload_size = std::accumulate(std::begin(file_input->signal_map),
                 std::end(file_input->signal_map), 0,
                 [](int const                                                                value,
@@ -115,35 +134,28 @@ namespace
                                 std::shared_ptr<vcd_file_input::Signal>>::value_type const &map) {
                     return value + map.second->data_bytes;
                 });
+        static std::int64_t      current_timestamp = 0;
 
-        if (file_input->current_timestamp >= file_input->next_timestamp) {
-            std::string complete_command;
-            if (read_bytes >= file_size - 1) {
-                return false;
-            }
-            while (read_bytes < file_size - 1) {
-                std::vector<char> line_buf {};
-                line_buf.reserve(file_size);
-                if (file_getsp(line_buf.data(), static_cast<int>(file_size - read_bytes),
-                            wth->fh) == nullptr) {
-                    // EOF or error
-                    std::cerr << "Error reading file or EOF!" << std::endl;
-                }
-                std::string const line { line_buf.data() };
-                read_bytes += line.size();
-                if (line.starts_with("#")) {
-                    vcd_parser::helper::string_append_and_replace(complete_command, line);
-                    break;
-                }
-            }
-            vcd_parser::parse_text_line(complete_command, file_input);
+        auto it = file_input->payload_commands.begin();
+        if (file_input->payload_commands.empty()) {
+            return false;
+        }
+        std::string const &current_command = *it;
+        std::int64_t const timestamp_from_command =
+                vcd_parser::get_current_timestamp_from_command(current_command);
+
+        if (current_timestamp >= timestamp_from_command) {
+            vcd_parser::generate_packet(file_input);
+            vcd_parser::parse_text_line(current_command, file_input);
             *data_offset = file_input->current_timestamp;
-
+            file_input->payload_commands.pop_front();
+            current_timestamp++;
             return vcd_read_packet(rec, buf, file_input, payload_size,
                     file_input->current_timestamp);
         }
         vcd_parser::generate_packet(file_input);
         *data_offset = file_input->current_timestamp;
+        current_timestamp++;
         return vcd_read_packet(rec, buf, file_input, payload_size, file_input->current_timestamp);
     }
 
@@ -171,24 +183,32 @@ namespace
                 break;
             case vcd_file_input::TIMESCALE::MILLISECONDS:
                 rec->ts.secs = static_cast<std::int64_t>(
-                        static_cast<double>(file_input->current_timestamp) * 1e6 / 1e9);
+                        static_cast<double>(file_input->current_timestamp) *
+                        vcd_parser::QUOTIENT_US / vcd_parser::QUOTIENT_NS);
                 rec->ts.nsecs = static_cast<int>(
-                        std::fmod(static_cast<double>(file_input->current_timestamp) * 1e6, 1e9));
+                        std::fmod(static_cast<double>(file_input->current_timestamp) *
+                                          vcd_parser::QUOTIENT_US,
+                                vcd_parser::QUOTIENT_NS));
                 break;
             case vcd_file_input::TIMESCALE::MICROSECONDS:
                 rec->ts.secs = static_cast<std::int64_t>(
-                        static_cast<double>(file_input->current_timestamp) * 1e3 / 1e9);
+                        static_cast<double>(file_input->current_timestamp) *
+                        vcd_parser::QUOTIENT_MS / vcd_parser::QUOTIENT_NS);
                 rec->ts.nsecs = static_cast<int>(
-                        std::fmod(static_cast<double>(file_input->current_timestamp) * 1e3, 1e9));
+                        std::fmod(static_cast<double>(file_input->current_timestamp) *
+                                          vcd_parser::QUOTIENT_MS,
+                                vcd_parser::QUOTIENT_NS));
                 break;
             case vcd_file_input::TIMESCALE::NANOSECONDS:
             case vcd_file_input::TIMESCALE::PICOSECONDS:
             case vcd_file_input::TIMESCALE::FEMTOSECONDS:
             default:
                 rec->ts.secs = static_cast<std::int64_t>(
-                        static_cast<double>(file_input->current_timestamp) / 1e9);
+                        static_cast<double>(file_input->current_timestamp) /
+                        vcd_parser::QUOTIENT_NS);
                 rec->ts.nsecs = static_cast<int>(
-                        std::fmod(static_cast<double>(file_input->current_timestamp), 1e9));
+                        std::fmod(static_cast<double>(file_input->current_timestamp),
+                                vcd_parser::QUOTIENT_NS));
         }
 
         rec->rec_header.packet_header.caplen = line_buf.size();
