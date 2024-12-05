@@ -60,6 +60,7 @@ namespace vcd_file_input
         std::vector<std::shared_ptr<Module>> modules { std::make_shared<Module>("Common") };
         std::map<std::string, std::shared_ptr<Signal>> signal_map;
         std::list<std::string>                         payload_commands;
+        std::int64_t                                   current_command_timestamp { 0 };
         std::int64_t                                   current_timestamp { 0 };
     };
 

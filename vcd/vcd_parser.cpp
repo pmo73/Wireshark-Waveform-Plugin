@@ -191,7 +191,7 @@ vcd_parser::process_timestamp(std::string const &input,
 {
 
     std::string const timestamp = input.substr(1);
-    file_input->current_timestamp =
+    file_input->current_command_timestamp =
             static_cast<std::int64_t>(std::strtoull(timestamp.c_str(), nullptr, DECIMAL_BASE));
     return true;
 }
@@ -216,8 +216,8 @@ vcd_parser::process_single_bit(std::string const &input,
 
     std::string const identifier = input.substr(1);
     std::string const value      = input.substr(0, 1);
-    file_input->signal_map[identifier]->data[file_input->current_timestamp] =
-            std::strtoull(value.c_str(), nullptr, DECIMAL_BASE);
+    file_input->signal_map[identifier]->data[file_input->current_command_timestamp] =
+            std::strtol(value.c_str(), nullptr, DECIMAL_BASE);
     return true;
 }
 auto

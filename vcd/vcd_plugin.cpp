@@ -24,7 +24,7 @@ namespace
     auto vcd_read(wtap *wth, wtap_rec *rec, Buffer *buf, int *err, gchar **err_info,
             gint64 *data_offset) -> VCD_CALLBACK_BOOL_RETURN_TYPE;
     auto vcd_read_packet(wtap_rec *rec, Buffer *buf, vcd_file_input::VcdFileInput *file_input,
-            std::size_t payload_size, std::int64_t offset) -> VCD_CALLBACK_BOOL_RETURN_TYPE;
+            std::int64_t offset) -> VCD_CALLBACK_BOOL_RETURN_TYPE;
     auto vcd_seek_read(wtap *wth, gint64 seek_off, wtap_rec *rec, Buffer *buf, int *err,
             gchar **err_info) -> VCD_CALLBACK_BOOL_RETURN_TYPE;
 
@@ -47,10 +47,10 @@ namespace
         // Read file header, until we read first timestamp
         while (read_bytes < file_size - 1) {
             std::vector<char> buf {};
-            buf.reserve(file_size - read_bytes);
+            buf.reserve(file_size);
 
             // read next new line from file
-            if (file_getsp(buf.data(), static_cast<int>(file_size - read_bytes), wth->fh) ==
+            if (file_getsp(buf.data(), static_cast<int>(file_size), wth->fh) ==
                     nullptr) {
                 return WTAP_OPEN_ERROR;
             }
@@ -102,9 +102,9 @@ namespace
         complete_line = first_payload_command;
         while (read_bytes < file_size - 1) {
             std::vector<char> buf {};
-            buf.reserve(file_size - read_bytes);
+            buf.reserve(file_size);
             // read next new line from file
-            if (file_getsp(buf.data(), static_cast<int>(file_size - read_bytes), wth->fh) ==
+            if (file_getsp(buf.data(), static_cast<int>(file_size), wth->fh) ==
                     nullptr) {
                 return WTAP_OPEN_ERROR;
             }
@@ -125,8 +125,42 @@ namespace
     vcd_read(wtap *wth, wtap_rec *rec, Buffer *buf, [[maybe_unused]] int *err,
             [[maybe_unused]] gchar **err_info, gint64 *data_offset) -> VCD_CALLBACK_BOOL_RETURN_TYPE
     {
+        static std::int64_t current_timestamp = 0;
+        static bool         send_meta_packet  = true;
+        auto *const         file_input = static_cast<vcd_file_input::VcdFileInput *>(wth->priv);
+        file_input->current_timestamp = current_timestamp;
 
-        auto *const file_input = static_cast<vcd_file_input::VcdFileInput *>(wth->priv);
+        if (send_meta_packet) {
+            send_meta_packet = false;
+            *data_offset = -1;
+            return vcd_read_packet(rec, buf, file_input, -1);
+        }
+
+        if (file_input->payload_commands.empty()) {
+            return false;
+        }
+        std::string const &current_command = file_input->payload_commands.front();
+        std::int64_t const timestamp_from_command =
+                vcd_parser::get_current_timestamp_from_command(current_command);
+
+        if (current_timestamp >= timestamp_from_command) {
+            vcd_parser::generate_packet(file_input);
+            vcd_parser::parse_text_line(current_command, file_input);
+            *data_offset = file_input->current_command_timestamp;
+            file_input->payload_commands.pop_front();
+            current_timestamp++;
+            return vcd_read_packet(rec, buf, file_input, file_input->current_command_timestamp);
+        }
+        vcd_parser::generate_packet(file_input);
+        *data_offset = file_input->current_command_timestamp;
+        current_timestamp++;
+        return vcd_read_packet(rec, buf, file_input, file_input->current_command_timestamp);
+    }
+
+    auto
+    vcd_read_packet(wtap_rec *rec, Buffer *buf, vcd_file_input::VcdFileInput *const file_input,
+            std::int64_t const offset) -> VCD_CALLBACK_BOOL_RETURN_TYPE
+    {
         static std::size_t const payload_size = std::accumulate(std::begin(file_input->signal_map),
                 std::end(file_input->signal_map), 0,
                 [](int const                                                                value,
@@ -134,41 +168,29 @@ namespace
                                 std::shared_ptr<vcd_file_input::Signal>>::value_type const &map) {
                     return value + map.second->data_bytes;
                 });
-        static std::int64_t      current_timestamp = 0;
-
-        auto it = file_input->payload_commands.begin();
-        if (file_input->payload_commands.empty()) {
-            return false;
-        }
-        std::string const &current_command = *it;
-        std::int64_t const timestamp_from_command =
-                vcd_parser::get_current_timestamp_from_command(current_command);
-
-        if (current_timestamp >= timestamp_from_command) {
-            vcd_parser::generate_packet(file_input);
-            vcd_parser::parse_text_line(current_command, file_input);
-            *data_offset = file_input->current_timestamp;
-            file_input->payload_commands.pop_front();
-            current_timestamp++;
-            return vcd_read_packet(rec, buf, file_input, payload_size,
-                    file_input->current_timestamp);
-        }
-        vcd_parser::generate_packet(file_input);
-        *data_offset = file_input->current_timestamp;
-        current_timestamp++;
-        return vcd_read_packet(rec, buf, file_input, payload_size, file_input->current_timestamp);
-    }
-
-    auto
-    vcd_read_packet(wtap_rec *rec, Buffer *buf, vcd_file_input::VcdFileInput *const file_input,
-            std::size_t const payload_size, std::int64_t const offset)
-            -> VCD_CALLBACK_BOOL_RETURN_TYPE
-    {
+        static std::size_t const meta_payload_size = std::accumulate(
+                std::begin(file_input->signal_map), std::end(file_input->signal_map), 0,
+                [](int const                                                                value,
+                        std::map<std::string,
+                                std::shared_ptr<vcd_file_input::Signal>>::value_type const &map) {
+                    return value + map.second->name.length();
+                });
         std::vector<std::uint8_t> line_buf {};
-        line_buf.reserve(payload_size);
-        for (auto const &[key, value] : file_input->signal_map) {
-            line_buf.emplace_back(value->data[offset]);
+
+        if (offset == -1) {
+            line_buf.reserve(meta_payload_size);
+            for (auto const &[identifier, signal] : file_input->signal_map) {
+                for (auto const &letter : signal->name) {
+                    line_buf.emplace_back(letter);
+                }
+            }
+        } else {
+            line_buf.reserve(payload_size);
+            for (auto const &[key, value] : file_input->signal_map) {
+                line_buf.emplace_back(value->data[offset]);
+            }
         }
+
         ws_buffer_assure_space(buf, line_buf.size());
         std::uint8_t *end_ptr = ws_buffer_end_ptr(buf);
         std::memcpy(end_ptr, line_buf.data(), line_buf.size());
@@ -213,7 +235,6 @@ namespace
 
         rec->rec_header.packet_header.caplen = line_buf.size();
         rec->rec_header.packet_header.len    = line_buf.size();
-        file_input->current_timestamp++;
         return true;
     }
 
@@ -228,15 +249,7 @@ namespace
             -> VCD_CALLBACK_BOOL_RETURN_TYPE
     {
         auto *const file_input = static_cast<vcd_file_input::VcdFileInput *>(wth->priv);
-        static std::size_t const payload_size = std::accumulate(std::begin(file_input->signal_map),
-                std::end(file_input->signal_map), 0,
-                [](int const                                                                value,
-                        std::map<std::string,
-                                std::shared_ptr<vcd_file_input::Signal>>::value_type const &map) {
-                    return value + map.second->data_bytes;
-                });
-
-        vcd_read_packet(rec, buf, file_input, payload_size, seek_off);
+        vcd_read_packet(rec, buf, file_input, seek_off);
         return true;
     }
 
