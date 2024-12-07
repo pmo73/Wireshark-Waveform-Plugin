@@ -50,8 +50,7 @@ namespace
             buf.reserve(file_size);
 
             // read next new line from file
-            if (file_getsp(buf.data(), static_cast<int>(file_size), wth->fh) ==
-                    nullptr) {
+            if (file_getsp(buf.data(), static_cast<int>(file_size), wth->fh) == nullptr) {
                 return WTAP_OPEN_ERROR;
             }
 
@@ -104,8 +103,7 @@ namespace
             std::vector<char> buf {};
             buf.reserve(file_size);
             // read next new line from file
-            if (file_getsp(buf.data(), static_cast<int>(file_size), wth->fh) ==
-                    nullptr) {
+            if (file_getsp(buf.data(), static_cast<int>(file_size), wth->fh) == nullptr) {
                 return WTAP_OPEN_ERROR;
             }
 
@@ -128,11 +126,11 @@ namespace
         static std::int64_t current_timestamp = 0;
         static bool         send_meta_packet  = true;
         auto *const         file_input = static_cast<vcd_file_input::VcdFileInput *>(wth->priv);
-        file_input->current_timestamp = current_timestamp;
+        file_input->current_timestamp  = current_timestamp;
 
         if (send_meta_packet) {
             send_meta_packet = false;
-            *data_offset = -1;
+            *data_offset     = -1;
             return vcd_read_packet(rec, buf, file_input, -1);
         }
 
@@ -187,7 +185,9 @@ namespace
         } else {
             line_buf.reserve(payload_size);
             for (auto const &[key, value] : file_input->signal_map) {
-                line_buf.emplace_back(value->data[offset]);
+                for (std::size_t i = 0; i < value->data_bytes; ++i) {
+                    line_buf.emplace_back(value->data[offset + i]);
+                }
             }
         }
 

@@ -7,6 +7,13 @@
 #include <regex>
 #include <sstream>
 
+enum class LogicState : std::uint8_t {
+    ZERO = 0,
+    ONE  = 1,
+    X    = 3,
+    Z    = 4
+};
+
 auto
 vcd_parser::parse_header(std::string const &input, vcd_file_input::VcdFileInput *const file_input)
         -> bool
@@ -49,7 +56,7 @@ vcd_parser::split_payload_commands(std::string const &input,
     }
 
     for (auto const &[identifier, signal] : file_input->signal_map) {
-        signal->data.reserve(file_input->payload_commands.size());
+        signal->data.reserve(file_input->payload_commands.size() * signal->data_bytes);
     }
     return true;
 }
@@ -69,15 +76,14 @@ vcd_parser::parse_commands(std::vector<std::string> const &commands,
         }
         if (seglist[0] == "$timescale") {
             parse_timescale(seglist, file_input);
-        }
-        if (seglist[0] == "$scope") {
+        } else if (seglist[0] == "$scope") {
             parse_scope(seglist, file_input, false);
-        }
-        if (seglist[0] == "$upscope") {
+        } else if (seglist[0] == "$upscope") {
             parse_scope(seglist, file_input, true);
-        }
-        if (seglist[0] == "$var") {
+        } else if (seglist[0] == "$var") {
             parse_header_var(seglist, file_input);
+        } else if (seglist[0] == "$dumpvars") {
+            parse_dumpvars(seglist, file_input);
         }
     }
     return true;
@@ -163,6 +169,25 @@ vcd_parser::parse_header_var(std::vector<std::string> const &input,
     }
     return false;
 }
+
+auto
+vcd_parser::parse_dumpvars(std::vector<std::string> const &input,
+        vcd_file_input::VcdFileInput *const                file_input) -> bool
+{
+    for (std::size_t i = 1; i < input.size(); i++) {
+        auto const &segment = input[i];
+        if (segment[0] == '0' || segment[0] == '1' || toupper(segment[0]) == 'X' ||
+                toupper(segment[0]) == 'Z') {
+            process_single_bit(segment, file_input, true);
+        } else if (segment[0] == 'b') {
+            process_multi_bit({ segment, input[++i] }, file_input, true);
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
 auto
 vcd_parser::parse_text_line(std::string const &input,
         vcd_file_input::VcdFileInput *const    file_input) -> bool
@@ -174,11 +199,14 @@ vcd_parser::parse_text_line(std::string const &input,
     while (std::getline(input_stream, segments, ' ')) {
         seglist.push_back(segments);
     }
-    for (auto const &segment : seglist) {
+    for (std::size_t i = 0; i < seglist.size(); i++) {
+        auto const &segment = seglist[i];
         if (segment[0] == '#') {
             process_timestamp(segment, file_input);
         } else if (segment[0] == '0' || segment[0] == '1') {
             process_single_bit(segment, file_input);
+        } else if (tolower(segment[0]) == 'b') {
+            process_multi_bit({ segment, seglist[++i] }, file_input);
         }
     }
 
@@ -211,20 +239,139 @@ vcd_parser::get_current_timestamp_from_command(std::string const &input) -> std:
 
 auto
 vcd_parser::process_single_bit(std::string const &input,
-        vcd_file_input::VcdFileInput *const       file_input) -> bool
+        vcd_file_input::VcdFileInput *const file_input, bool dumpvars) -> bool
 {
-
     std::string const identifier = input.substr(1);
-    std::string const value      = input.substr(0, 1);
-    file_input->signal_map[identifier]->data[file_input->current_command_timestamp] =
-            std::strtol(value.c_str(), nullptr, DECIMAL_BASE);
+    if (dumpvars) {
+        if (char const value = input.substr(0, 1).front(); isalpha(value) != 0) {
+            if (toupper(value) == 'X') {
+                file_input->signal_map[identifier]->data.emplace_back(
+                        static_cast<std::uint8_t>(LogicState::X));
+            } else if (toupper(value) == 'Z') {
+                file_input->signal_map[identifier]->data.emplace_back(
+                        static_cast<std::uint8_t>(LogicState::Z));
+            } else {
+                return false;
+            }
+        } else if (isdigit(value) != 0) {
+            if (value == '0') {
+                file_input->signal_map[identifier]->data.emplace_back(
+                        static_cast<std::uint8_t>(LogicState::ZERO));
+            } else if (value == '1') {
+                file_input->signal_map[identifier]->data.emplace_back(
+                        static_cast<std::uint8_t>(LogicState::ONE));
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        if (char const value = input.substr(0, 1).front(); isalpha(value) != 0) {
+            if (toupper(value) == 'X') {
+                file_input->signal_map[identifier]->data[file_input->current_command_timestamp] =
+                        static_cast<std::uint8_t>(LogicState::X);
+            } else if (toupper(value) == 'Z') {
+                file_input->signal_map[identifier]->data[file_input->current_command_timestamp] =
+                        static_cast<std::uint8_t>(LogicState::Z);
+            } else {
+                return false;
+            }
+        } else if (isdigit(value) != 0) {
+            if (value == '0') {
+                file_input->signal_map[identifier]->data[file_input->current_command_timestamp] =
+                        static_cast<std::uint8_t>(LogicState::ZERO);
+            } else if (value == '1') {
+                file_input->signal_map[identifier]->data[file_input->current_command_timestamp] =
+                        static_cast<std::uint8_t>(LogicState::ONE);
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
     return true;
 }
+
+auto
+vcd_parser::process_multi_bit(std::vector<std::string> const &input,
+        vcd_file_input::VcdFileInput *const file_input, bool dumpvars) -> bool
+{
+    std::string const &identifier = input[1];
+    auto const         input_data = input[0].substr(1);
+    if (dumpvars) {
+        for (std::size_t i = 0; i < input_data.size(); ++i) {
+            if (auto const value = input_data[i]; isalpha(value) != 0) {
+                if (toupper(value) == 'X') {
+                    file_input->signal_map[identifier]->data.emplace_back(
+                            static_cast<std::uint8_t>(LogicState::X));
+                } else if (toupper(value) == 'Z') {
+                    file_input->signal_map[identifier]->data.emplace_back(
+                            static_cast<std::uint8_t>(LogicState::Z));
+                } else {
+                    return false;
+                }
+            } else if (isdigit(value) != 0) {
+                if (value == '0') {
+                    file_input->signal_map[identifier]->data.emplace_back(
+                            static_cast<std::uint8_t>(LogicState::ZERO));
+                } else if (value == '1') {
+                    file_input->signal_map[identifier]->data.emplace_back(
+                            static_cast<std::uint8_t>(LogicState::ONE));
+                    ;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+    } else {
+        for (std::size_t i = 0; i < input_data.size(); ++i) {
+            if (auto const value = input_data[i]; isalpha(value) != 0) {
+                if (toupper(value) == 'X') {
+                    file_input->signal_map[identifier]
+                            ->data[file_input->current_command_timestamp + i] =
+                            static_cast<std::uint8_t>(LogicState::X);
+                } else if (toupper(value) == 'Z') {
+                    file_input->signal_map[identifier]
+                            ->data[file_input->current_command_timestamp + i] =
+                            static_cast<std::uint8_t>(LogicState::Z);
+                } else {
+                    return false;
+                }
+            } else if (isdigit(value) != 0) {
+                if (value == '0') {
+                    file_input->signal_map[identifier]
+                            ->data[file_input->current_command_timestamp + i] =
+                            static_cast<std::uint8_t>(LogicState::ZERO);
+                } else if (value == '1') {
+                    file_input->signal_map[identifier]
+                            ->data[file_input->current_command_timestamp + i] =
+                            static_cast<std::uint8_t>(LogicState::ONE);
+                    ;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 auto
 vcd_parser::generate_packet(vcd_file_input::VcdFileInput *const file_input) -> bool
 {
     for (auto const &[key, value] : file_input->signal_map) {
-        value->data.emplace_back(value->data.back());
+        auto it = value->data.cend();
+        if (value->data.size() < (file_input->current_timestamp + 1) * value->data_bytes) {
+            for (std::size_t i = value->data_bytes; i > 0; --i) {
+                value->data.emplace_back(*(it - i));
+            }
+        }
     }
     return true;
 }
@@ -234,7 +381,7 @@ namespace
     auto
     both_are_spaces(char const lhs, char const rhs) -> bool
     {
-        return (lhs == rhs) && (lhs == ' ');
+        return lhs == rhs && lhs == ' ';
     }
 } // namespace
 

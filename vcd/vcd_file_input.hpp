@@ -28,7 +28,7 @@ namespace vcd_file_input
         explicit
         Signal(std::string name, std::string identifier, std::size_t const bit_width) :
             name(std::move(name)), identifier(std::move(identifier)), bit_width(bit_width),
-            data_bytes((bit_width + 8 - 1) / 8)
+            data_bytes(bit_width)
         {
         }
 

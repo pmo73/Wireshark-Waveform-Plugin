@@ -29,13 +29,17 @@ namespace vcd_parser
             vcd_file_input::VcdFileInput *file_input, bool is_up) -> bool;
     auto parse_header_var(std::vector<std::string> const &input,
             vcd_file_input::VcdFileInput                 *file_input) -> bool;
+    auto parse_dumpvars(std::vector<std::string> const &input,
+            vcd_file_input::VcdFileInput               *file_input) -> bool;
     auto
     parse_text_line(std::string const &input, vcd_file_input::VcdFileInput *file_input) -> bool;
     auto
     process_timestamp(std::string const &input, vcd_file_input::VcdFileInput *file_input) -> bool;
     auto get_current_timestamp_from_command(std::string const &input) -> std::int64_t;
-    auto
-    process_single_bit(std::string const &input, vcd_file_input::VcdFileInput *file_input) -> bool;
+    auto process_single_bit(std::string const &input, vcd_file_input::VcdFileInput *file_input,
+            bool dumpvars = false) -> bool;
+    auto process_multi_bit(std::vector<std::string> const &input,
+            vcd_file_input::VcdFileInput *file_input, bool dumpvars = false) -> bool;
     auto generate_packet(vcd_file_input::VcdFileInput *file_input) -> bool;
 
     namespace helper
