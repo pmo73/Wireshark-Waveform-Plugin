@@ -1,0 +1,91 @@
+name: Ubuntu
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  Global:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
+        include:
+          - os: ubuntu-22.04
+            wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wiretap/wtap-int.h
+            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wsutil/file_util.h
+          - os: ubuntu-24.04
+            wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wiretap/wtap-int.h
+            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wsutil/file_util.h
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packages
+        run: |
+          sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev tshark build-essential cmake libgcrypt20-dev libgnutls28-dev sudo
+      - if: ${{ matrix.wtap-file }}
+        run: sudo wget -O /usr/include/wireshark/wiretap/wtap-int.h ${{ matrix.wtap-file }}
+      - if: ${{ matrix.file-util-file }}
+        run: sudo wget -O /usr/include/wireshark/wsutil/file_util.h ${{ matrix.file-util-file }}
+
+      - name: Build plugins
+        run: |
+          cmake -DINSTALL_PLUGIN_LOCAL=OFF .
+          make -j$(nproc)
+          sudo make install
+          tshark -G folders
+
+      - name: Check if plugin is installed correctly
+        run: tshark -G plugins | grep -E "VCDReader.so.*file type"
+
+      - name: Test plugins for error
+        run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'
+
+  Local:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
+        include:
+          - os: ubuntu-22.04
+            wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wiretap/wtap-int.h
+            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wsutil/file_util.h
+          - os: ubuntu-24.04
+            wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wiretap/wtap-int.h
+            file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wsutil/file_util.h
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packages
+        run: |
+          sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev tshark build-essential cmake libgcrypt20-dev libgnutls28-dev sudo
+      - if: ${{ matrix.wtap-file }}
+        run: sudo wget -O /usr/include/wireshark/wiretap/wtap-int.h ${{ matrix.wtap-file }}
+      - if: ${{ matrix.file-util-file }}
+        run: sudo wget -O /usr/include/wireshark/wsutil/file_util.h ${{ matrix.file-util-file }}
+
+      - name: Build plugins
+        run: |
+          cmake .
+          make -j$(nproc)
+          sudo make install
+          tshark -G folders
+
+      - name: Check if plugin is installed correctly
+        run: tshark -G plugins | grep -E "VCDReader.so.*file type"
+
+      - name: Test plugins for error
+        run: '! tshark -G plugins 2>&1 >/dev/null | grep -i -E "(error|couldn)"'

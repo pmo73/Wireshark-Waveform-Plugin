@@ -1,0 +1,3 @@
+# ignore these files or directories
+**/*build*/*
+./scripts/*
