@@ -14,6 +14,9 @@ RUN wget -O /tmp/clion.tar.gz "https://download.jetbrains.com/cpp/CLion-2024.2.2
         rm /tmp/clion.tar.gz && \
         ln -s /opt/clion-2024.2.2/bin/clion /usr/bin/clion
 
+# Install Qt6
+RUN pacman -Syu && pacman -S --noconfirm qt6-base
+
 # Install Wireshark and fix header
 RUN pacman -Syu && pacman -S --noconfirm wireshark-qt wireshark-cli
 RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/$WIRESHARK_VERSION/wiretap/wtap-int.h && \

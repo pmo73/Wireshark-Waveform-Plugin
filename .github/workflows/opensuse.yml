@@ -34,7 +34,7 @@ jobs:
       # Install needed packages
       - name: Install packages
         run: |
-          zypper update -y && zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++ wget sudo
+          zypper update -y && zypper install -y wireshark wireshark-devel cmake make gcc gcc-c++ wget sudo qt6-base-devel
           wget -O /usr/include/wireshark/wiretap/wtap-int.h  ${{ matrix.wtap-file }}
           wget -O /usr/include/wireshark/wsutil/file_util.h  ${{ matrix.file-util-file }}
 

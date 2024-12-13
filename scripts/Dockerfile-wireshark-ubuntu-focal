@@ -42,6 +42,9 @@ RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-"$LL
     update-alternatives --auto c++ && \
     update-alternatives --auto cc
 
+# Install Qt6
+RUN apt-get install -y qtcreator qtbase5-dev
+
 # Fix Wireshark Header
 RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wiretap/wtap-int.h && \
     wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wsutil/file_util.h

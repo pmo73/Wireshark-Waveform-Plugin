@@ -47,6 +47,9 @@ RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-"$LL
 RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wiretap/wtap-int.h && \
     wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wsutil/file_util.h
 
+# Install Qt6
+RUN apt-get install -y qt6-base-dev qt6-base-dev-tools qtcreator
+
 COPY bashrc-git-prompt /
 RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \
     rm /bashrc-git-prompt

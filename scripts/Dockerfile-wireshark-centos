@@ -14,8 +14,11 @@ RUN wget -O /tmp/clion.tar.gz "https://download.jetbrains.com/cpp/CLion-2024.2.2
         rm /tmp/clion.tar.gz && \
         ln -s /opt/clion-2024.2.2/bin/clion /usr/bin/clion
 
+# Install Qt5
+RUN yum config-manager --enable crb && yum install -y qt5-qtbase-devel qt5-qttools-devel
+
 # Install Wireshark and fix header
-RUN yum update -y && yum config-manager --enable crb && yum install -y wireshark-devel wireshark libgcrypt-devel gnutls-devel
+RUN yum config-manager --enable crb && yum install -y wireshark-devel wireshark libgcrypt-devel gnutls-devel
 RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wiretap/wtap-int.h && \
     wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wsutil/file_util.h
 

@@ -176,6 +176,7 @@ dkms.conf
 
 # CMake
 cmake-build-*/
+**/build/**
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
@@ -326,7 +327,53 @@ CMakeLists.txt.user*
 *.cxxflags
 *.cflags
 
+## QTCreator generated
+# This file is used to ignore files which are generated
+# ----------------------------------------------------------------------------
+
+*~
+*.core
+*.rej
+*_pch.h.cpp
+*_resource.rc
+.#*
+*.*#
+core
+!core/
+tags
+.DS_Store
+.directory
+*.debug
+Thumbs.db
+*.res
+*.rc
+
+# qtcreator generated files
+*.pro.user*
+
+# xemacs temporary files
+*.flc
+
+# Vim temporary files
+.*.swp
+
+# Visual Studio generated files
+*.ib_pdb_index
+*.sln
+*.suo
+*.vcproj
+*vcproj.*.*.user
+*.ncb
+*.sdf
+*.opensdf
+*.vcxproj
+*vcxproj.*
+
+# MinGW generated files
+*.Debug
+*.Release
+
+# Python byte code
+*.pyc
 
 # End of https://www.toptal.com/developers/gitignore/api/c,c++,cmake,clion+all,git,autotools,qt,qtcreator
-
-
