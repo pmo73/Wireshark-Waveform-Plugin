@@ -1,0 +1,51 @@
+\NeedsTeXFormat{LaTeX2e}
+\documentclass[a4paper,12pt,
+oneside,               % zweiseitig
+%,draft
+]{scrbook}
+\usepackage{bytefield}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{tabularx}
+
+\begin{document}
+\section*{TBD Dissektor Header}
+
+\begin{tabular}[h]{|p{5cm}|p{8cm}|}
+    \hline
+    \textbf{Feld}   & \textbf{Beschreibung}\\
+    \hline
+    Minor           & Minorversion des Protokolls\\
+    Major           & Majorversion des Protokolls\\
+    Pakettyp        & Unterscheidet, ob das Paket ein Daten-, Meta-,\dots Paket ist\\
+    Länge           & Gesamtlänge der Payload\\
+    \hline
+\end{tabular}
+\begin{figure}[htbp]
+    \centering
+    \begin{bytefield}[bitheight=\widthof{~Protokoll-Feld~},boxformatting={\centering}]{32}
+        \bitheader{0-31}\\
+        \bitbox{4}{Minor} & \bitbox{4}{Major} & \bitbox{4}{\rotatebox{90}{Pakettyp}} &\bitbox{16}{Länge der Daten im Paket} &\bitbox{4}{\rotatebox{90}{Reserviert}}\\
+    \end{bytefield}
+\end{figure}
+
+\section*{AXI-* Dissektor Header}
+\begin{tabular}[h]{|p{5cm}|p{8cm}|}
+    \hline
+    \textbf{Feld}   & \textbf{Beschreibung}\\
+    \hline
+    Minor           & Minorversion des Protokolls\\
+    Major           & Majorversion des Protokolls\\
+    Pakettyp        & Unterscheidet, ob das Paket ein Daten-, Meta-,\dots Paket ist\\
+    Länge           & Gesamtlänge der Payload\\
+    Protokollfeld   & Identifiziert das Paket als bspw AXI-Stream Paket\\
+    \hline
+\end{tabular}
+\begin{figure}[htbp]
+    \centering
+    \begin{bytefield}[bitheight=\widthof{~Protokoll-Feld~},boxformatting={\centering}]{32}
+        \bitheader{0-31}\\
+        \bitbox{4}{Minor} & \bitbox{4}{Major} & \bitbox{4}{\rotatebox{90}{Pakettyp}} &\bitbox{16}{Länge der Daten im Paket} &\bitbox{4}{\rotatebox{90}{Protokollfeld}}\\
+    \end{bytefield}
+\end{figure}
+\end{document}
