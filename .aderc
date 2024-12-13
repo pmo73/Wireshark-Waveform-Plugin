@@ -7,5 +7,5 @@ export ADE_DOCKER_RUN_ARGS="-v ${HOME}/.gitconfig:/home/${USER}/.gitconfig \
     --network=host"
 
 export ADE_IMAGES="
-   bjoern97/wireshark-waveform-plugin:latest
+    bjoern97/wireshark-waveform-plugin:latest
 "
