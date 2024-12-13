@@ -2,11 +2,14 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1460</width>
+    <width>1200</width>
     <height>931</height>
    </rect>
   </property>
@@ -79,7 +82,175 @@
      <item>
       <layout class="QHBoxLayout" name="MainModuleAndSignalLayout" stretch="0,0,0,0,0">
        <item>
-        <widget class="QTreeView" name="ModuleTreeView"/>
+        <widget class="QTreeWidget" name="ModuleTreeWidget">
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAsNeeded</enum>
+         </property>
+         <property name="autoScroll">
+          <bool>false</bool>
+         </property>
+         <property name="verticalScrollMode">
+          <enum>QAbstractItemView::ScrollPerItem</enum>
+         </property>
+         <property name="horizontalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
+         </property>
+         <column>
+          <property name="text">
+           <string>Modules</string>
+          </property>
+         </column>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>New Subitem</string>
+           </property>
+           <item>
+            <property name="text">
+             <string>New Subitem</string>
+            </property>
+            <item>
+             <property name="text">
+              <string>New Subitem</string>
+             </property>
+             <item>
+              <property name="text">
+               <string>New Subitem</string>
+              </property>
+              <item>
+               <property name="text">
+                <string>New Subitem</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>New Subitem</string>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>New Subitem</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>New Subitem</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>New Subitem</string>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>New Subitem</string>
+                    </property>
+                   </item>
+                  </item>
+                 </item>
+                </item>
+               </item>
+              </item>
+             </item>
+            </item>
+           </item>
+          </item>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>New Subitem</string>
+           </property>
+          </item>
+         </item>
+        </widget>
        </item>
        <item>
         <layout class="QVBoxLayout" name="SignalButtonLayout">
@@ -120,7 +291,189 @@
         </layout>
        </item>
        <item>
-        <widget class="QTreeView" name="SignalTreeView"/>
+        <widget class="QTreeWidget" name="SignalTreeWidget">
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAsNeeded</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAsNeeded</enum>
+         </property>
+         <column>
+          <property name="text">
+           <string>Signals</string>
+          </property>
+         </column>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>New Subitem</string>
+           </property>
+           <item>
+            <property name="text">
+             <string>New Subitem</string>
+            </property>
+            <item>
+             <property name="text">
+              <string>New Subitem</string>
+             </property>
+             <item>
+              <property name="text">
+               <string>New Subitem</string>
+              </property>
+              <item>
+               <property name="text">
+                <string>New Subitem</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>New Subitem</string>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>New Subitem</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>New Subitem</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>New Subitem</string>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>New Subitem</string>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>New Subitem</string>
+                     </property>
+                     <item>
+                      <property name="text">
+                       <string>New Subitem</string>
+                      </property>
+                      <item>
+                       <property name="text">
+                        <string>New Subitem</string>
+                       </property>
+                       <item>
+                        <property name="text">
+                         <string>New Subitem</string>
+                        </property>
+                       </item>
+                      </item>
+                     </item>
+                    </item>
+                   </item>
+                  </item>
+                 </item>
+                </item>
+               </item>
+              </item>
+             </item>
+            </item>
+           </item>
+          </item>
+         </item>
+        </widget>
        </item>
        <item>
         <widget class="QWidget" name="SignalValueWidget" native="true"/>
@@ -148,7 +501,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1460</width>
+     <width>1200</width>
      <height>19</height>
     </rect>
    </property>

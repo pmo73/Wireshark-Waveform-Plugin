@@ -18,7 +18,6 @@ RUN wget -O /tmp/clion.tar.gz "https://download.jetbrains.com/cpp/CLion-2024.2.2
 RUN zypper install -n -y qt6-base-devel
 
 # Install Wireshark and fix header
-RUN zypper install -n -y wireshark-devel wireshark
 RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/$WIRESHARK_VERSION/wiretap/wtap-int.h && \
     wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/heads/$WIRESHARK_VERSION/wsutil/file_util.h
 
