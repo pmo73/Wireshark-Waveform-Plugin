@@ -34,7 +34,7 @@ jobs:
       # Install needed packages
       - name: Install packages
         run: |
-          pacman -Syu --noconfirm && pacman -S --noconfirm wireshark-qt wireshark-cli cmake make gcc wget sudo
+          pacman -Syu --noconfirm && pacman -S --noconfirm wireshark-qt wireshark-cli cmake make gcc wget sudo qt6-base
           wget -O /usr/include/wireshark/wiretap/wtap-int.h  ${{ matrix.wtap-file }}
           wget -O /usr/include/wireshark/wsutil/file_util.h  ${{ matrix.file-util-file }}
 

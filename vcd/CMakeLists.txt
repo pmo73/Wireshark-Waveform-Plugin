@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(VCDReader VERSION 0.0.1 DESCRIPTION "Wireshark VCD file reader" LANGUAGES C CXX)
 option(INSTALL_PLUGIN_LOCAL "Install the vcd file reader plugin inside the local folder of wireshark" ON)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package(Wireshark CONFIG REQUIRED)
 

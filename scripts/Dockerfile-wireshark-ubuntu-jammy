@@ -5,7 +5,7 @@ ARG WIRESHARK_VERSION=wireshark-3.6.2
 
 RUN apt-get update && apt-get install -y wget vim tzdata zsh gettext-base locales keyboard-configuration sudo \
     software-properties-common curl lsb-release apt-utils linux-tools-generic gpg-agent gcc g++ build-essential cmake \
-    wireshark-dev wireshark-common git
+    git libgcrypt20-dev libgnutls28-dev
 
 RUN locale-gen en_US.UTF-8; dpkg-reconfigure -f noninteractive locales
 ENV LANG en_US.UTF-8
@@ -45,6 +45,9 @@ RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-"$LL
 # Fix Wireshark Header
 RUN wget -O /usr/include/wireshark/wiretap/wtap-int.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wiretap/wtap-int.h && \
     wget -O /usr/include/wireshark/wsutil/file_util.h https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/$WIRESHARK_VERSION/wsutil/file_util.h
+
+# Install Qt6
+RUN apt-get install -y qt6-base-dev qt6-base-dev-tools qtcreator freeglut3-dev
 
 COPY bashrc-git-prompt /
 RUN cat /bashrc-git-prompt >> /etc/skel/.bashrc && \

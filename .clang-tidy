@@ -9,6 +9,7 @@ Checks: "*,
          -objc-*,
          -zircon-*,
          -cppcoreguidelines-non-private-member-variables-in-classes,
+         -cppcoreguidelines-owning-memory,
          -cppcoreguidelines-pro-type-union-access,
          -misc-non-private-member-variables-in-classes,
          -performance-avoid-endl"

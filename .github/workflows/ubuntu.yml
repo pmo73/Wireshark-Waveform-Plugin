@@ -18,12 +18,16 @@ jobs:
       matrix:
         os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
         include:
+          - os: ubuntu-20.04
+            apt-packages: qtbase5-dev
           - os: ubuntu-22.04
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wsutil/file_util.h
+            apt-packages: qt6-base-dev freeglut3-dev
           - os: ubuntu-24.04
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wsutil/file_util.h
+            apt-packages: qt6-base-dev
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
 
@@ -32,7 +36,8 @@ jobs:
 
       - name: Install packages
         run: |
-          sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev tshark build-essential cmake libgcrypt20-dev libgnutls28-dev sudo
+          sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev tshark build-essential cmake \
+                                                          libgcrypt20-dev libgnutls28-dev sudo ${{ matrix.apt-packages }}
       - if: ${{ matrix.wtap-file }}
         run: sudo wget -O /usr/include/wireshark/wiretap/wtap-int.h ${{ matrix.wtap-file }}
       - if: ${{ matrix.file-util-file }}
@@ -57,12 +62,16 @@ jobs:
       matrix:
         os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
         include:
+          - os: ubuntu-20.04
+            apt-packages: qtbase5-dev
           - os: ubuntu-22.04
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wsutil/file_util.h
+            apt-packages: qt6-base-dev freeglut3-dev
           - os: ubuntu-24.04
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wsutil/file_util.h
+            apt-packages: qt6-base-dev
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
 
@@ -71,7 +80,8 @@ jobs:
 
       - name: Install packages
         run: |
-          sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev tshark build-essential cmake libgcrypt20-dev libgnutls28-dev sudo
+          sudo apt-get update && sudo apt-get install -y wireshark-common wireshark-dev tshark build-essential cmake \
+                                                          libgcrypt20-dev libgnutls28-dev sudo ${{ matrix.apt-packages }}
       - if: ${{ matrix.wtap-file }}
         run: sudo wget -O /usr/include/wireshark/wiretap/wtap-int.h ${{ matrix.wtap-file }}
       - if: ${{ matrix.file-util-file }}
