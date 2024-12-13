@@ -15,10 +15,14 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+     explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
 
 private:
     Ui::MainWindow *ui;
+
+private slots:
+    void resize_signal_tree_widget() const;
+    void resize_modul_tree_widget() const;
 };
 #endif // MAINWINDOW_H
