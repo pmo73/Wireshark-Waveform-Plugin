@@ -67,7 +67,7 @@ jobs:
           - os: ubuntu-22.04
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-3.6.2/wsutil/file_util.h
-            apt-packages: qt6-base-dev
+            apt-packages: qt6-base-dev freeglut3-dev
           - os: ubuntu-24.04
             wtap-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wiretap/wtap-int.h
             file-util-file: https://raw.githubusercontent.com/wireshark/wireshark/refs/tags/wireshark-4.2.2/wsutil/file_util.h
